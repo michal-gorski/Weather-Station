@@ -14,4 +14,4 @@ for x in range(count):
 
 print(sum/count)
 print("------------------")
-print(numbers)
+print(dict(sorted(numbers.items())))
