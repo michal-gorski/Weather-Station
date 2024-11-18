@@ -20,21 +20,24 @@ print("------------------")
 print(dict(sorted(numbers.items())))
 
 
-url = 'https://weather.com/weather/tenday/l/93409ef628e2eccc8fe84493beb24470c722d12ef4632a9c49250af345ba81ef'
-response = requests.get(url)
+url = 'https://weather.com/pl-PL/weather/tenday/l/93409ef628e2eccc8fe84493beb24470c722d12ef4632a9c49250af345ba81ef'
+response = requests.get(url,verify=False)
 
 soup = BeautifulSoup(response.text, 'html.parser')
-mydivs = soup.find_all("div")
+mydivs = soup.find_all("details")
 
+filteredDivs = []
 for div in mydivs:
         classes = div.get('class')
         if classes:
-            filtered_classes = [cls for cls in classes if cls.startswith('Daily')]
-            if filtered_classes:
-                
-                print(f"Class: {filtered_classes}")
+            filtered_classes = [cls for cls in classes if cls.startswith('DaypartDetails')]
+            if filtered_classes:                
+                #print(f"Class: {filtered_classes}")                
+                filteredDivs.append(div)
 
+for div in filteredDivs:
+    print(div.text)
 
-
-
-print(soup.p['class'])
+#f = open("divs.txt", "a")
+#f.write(copiedDivs)
+#f.close()
