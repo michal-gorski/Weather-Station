@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <meta>
+        <filters directoryPatterns="" filePatterns="\Qweather-station.xpr\E" positiveFilePatterns="" showHiddenFiles="false"/>
+        <options/>
+    </meta>
+    <projectTree name="weather-station.xpr">
+        <folder path="."/>
+    </projectTree>
+</project>
