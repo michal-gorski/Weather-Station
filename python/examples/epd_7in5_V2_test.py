@@ -27,6 +27,20 @@ try:
     font18 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 18)
     font35 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 35)
 
+    # '''4Gray display'''
+    # # The feature will only be available on screens sold after 24/10/23
+    logging.info("4Gray display--------------------------------")
+    epd.init_4Gray()
+     
+    Limage = Image.new('L', (epd.width, epd.height), 0)  # 255: clear the frame
+    draw = ImageDraw.Draw(Limage)
+    draw.text((20, 0), u'微雪电子', font = font35, fill = epd.GRAY1)
+    draw.text((20, 35), u'微雪电子', font = font35, fill = epd.GRAY2)
+    draw.text((20, 70), u'微雪电子', font = font35, fill = epd.GRAY3)
+    
+    epd.display_4Gray(epd.getbuffer_4Gray(Limage))
+    time.sleep(12)
+    
     logging.info("read bmp file")
     Himage = Image.open(os.path.join(picdir, '7in5_V2.bmp'))
     epd.display(epd.getbuffer(Himage))
