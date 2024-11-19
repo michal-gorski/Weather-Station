@@ -35,12 +35,13 @@ try:
      
     Limage = Image.new('L', (epd.width, epd.height), 0)  # 255: clear the frame
     draw = ImageDraw.Draw(Limage)
-    draw.text((20, 0), u'微雪电子', font = font35, fill = epd.GRAY1)
-    draw.text((20, 35), u'微雪电子', font = font35, fill = epd.GRAY2)
-    draw.text((20, 70), u'微雪电子', font = font35, fill = epd.GRAY3)
+    print(epd.GRAY2)
+    draw.text((20, 0), u'Test GRAY2', font = font24, fill = epd.GRAY2)
+    #draw.text((20, 35), u'微雪电子', font = font35, fill = epd.GRAY2)
+    #draw.text((20, 70), u'微雪电子', font = font35, fill = epd.GRAY3)
     
     epd.display_4Gray(epd.getbuffer_4Gray(Limage))
-    time.sleep(12)
+    time.sleep(30)
     
     '''
     logging.info("read bmp file")
