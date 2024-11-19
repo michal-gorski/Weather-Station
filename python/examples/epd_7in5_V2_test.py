@@ -20,15 +20,15 @@ try:
     epd = epd7in5_V2.EPD()
     
     logging.info("init and Clear")
-    #epd.init()
-    epd.init_4Gray()
+    epd.init()
+    #epd.init_4Gray()
     epd.Clear()
 
     font24 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 24)
     font18 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 18)
     font35 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 35)
 
-    # '''4Gray display'''
+    '''
     # # The feature will only be available on screens sold after 24/10/23
     logging.info("4Gray display--------------------------------")
     epd.init_4Gray()
@@ -43,12 +43,13 @@ try:
     
     epd.display_4Gray(epd.getbuffer_4Gray(Limage))
     time.sleep(30)
-    epd.init()
+    '''
+  
 
 #my drawingepd.init_fast()
     logging.info("my test")
     Himage = Image.new('1', (epd.width, epd.height), 255)  # 255: clear the frame
-  
+    draw = ImageDraw.Draw(Himage)
     ratio = epd.width/epd.height
     for x in range(0,Himage.size[1],3):        
         draw.line((0, x, Himage.size[0]-(x*ratio), Himage.size[1]), fill=0)   
