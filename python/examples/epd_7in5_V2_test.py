@@ -28,11 +28,12 @@ try:
     font18 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 18)
     font35 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 35)
 
-    '''
+    
     # # The feature will only be available on screens sold after 24/10/23
     logging.info("4Gray display--------------------------------")
     epd.init_4Gray()
-     
+    epd.Clear()
+
     Limage = Image.new('L', (epd.width, epd.height), epd.GRAY3)  # 255: clear the frame
     draw = ImageDraw.Draw(Limage)
     print(epd.GRAY2)
@@ -42,8 +43,10 @@ try:
     #draw.text((20, 70), u'微雪电子', font = font35, fill = epd.GRAY3)
     
     epd.display_4Gray(epd.getbuffer_4Gray(Limage))
-    time.sleep(30)
-    '''
+    time.sleep(15)
+   
+    epd.init()
+    epd.Clear()
   
 
 #my drawingepd.init_fast()
@@ -58,7 +61,7 @@ try:
         draw.line((x, 0, Himage.size[0], Himage.size[1]-(x*ratio)), fill=0)   
     
     epd.display(epd.getbuffer(Himage))
-    time.sleep(6)
+    time.sleep(16)
 
 
     '''
