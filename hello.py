@@ -66,3 +66,4 @@ print('Pył PM 10: ',parsed['pm10IndexLevel']['indexLevelName'])
 with open('plan.json', 'r') as file:
     data = json.load(file)
     print(data)
+print(test)
