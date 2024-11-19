@@ -33,9 +33,10 @@ try:
     logging.info("4Gray display--------------------------------")
     epd.init_4Gray()
      
-    Limage = Image.new('L', (epd.width, epd.height), 0)  # 255: clear the frame
+    Limage = Image.new('L', (epd.width, epd.height), epd.GRAY3)  # 255: clear the frame
     draw = ImageDraw.Draw(Limage)
     print(epd.GRAY2)
+    print(epd.GRAY3)
     draw.text((20, 0), u'Test GRAY2', font = font24, fill = epd.GRAY2)
     #draw.text((20, 35), u'微雪电子', font = font35, fill = epd.GRAY2)
     #draw.text((20, 70), u'微雪电子', font = font35, fill = epd.GRAY3)
