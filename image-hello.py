@@ -37,6 +37,14 @@ try:
           text="Hello, Geeks!", 
           font=font24, 
           fill=0) 
+    
+    ratio = 800/480
+    for x in range(0,Himage.size[1],3):        
+        draw.line((0, x, Himage.size[0]-(x*ratio), Himage.size[1]), fill=0)   
+
+    for x in range(0,Himage.size[0],5):        
+        draw.line((x, 0, Himage.size[0], Himage.size[1]-(x*ratio)), fill=0)   
+
     Himage.show()
     
     draw.text((10, 0), 'hello world', font = font24, fill = 0)
