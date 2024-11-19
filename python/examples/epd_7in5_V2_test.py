@@ -20,7 +20,8 @@ try:
     epd = epd7in5_V2.EPD()
     
     logging.info("init and Clear")
-    epd.init()
+    #epd.init()
+    epd.init_4Gray()
     epd.Clear()
 
     font24 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 24)
@@ -41,6 +42,7 @@ try:
     epd.display_4Gray(epd.getbuffer_4Gray(Limage))
     time.sleep(12)
     
+    '''
     logging.info("read bmp file")
     Himage = Image.open(os.path.join(picdir, '7in5_V2.bmp'))
     epd.display(epd.getbuffer(Himage))
@@ -108,7 +110,7 @@ try:
     # time.sleep(2)
 
 
-    # '''4Gray display'''
+    # 4Gray display
     # # The feature will only be available on screens sold after 24/10/23
     logging.info("4Gray display--------------------------------")
     epd.init_4Gray()
@@ -130,7 +132,7 @@ try:
     epd.display_4Gray(epd.getbuffer_4Gray(Limage))
     time.sleep(6)
     
-
+'''
     logging.info("Clear...")
     epd.init()
     epd.Clear()
