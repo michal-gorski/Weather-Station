@@ -41,7 +41,6 @@ forecast = {}
 for div in filteredDivs:  
     day = div.h2.text 
     forecast[day] = dict() 
-    test = div.find_all(attrs={"data-testid": "TemperatureValue"})
     
     forecast[day]['temperature'] = div.find_all(attrs={"data-testid": "TemperatureValue"})[0].text
     forecast[day]['wind'] = div.find_all(attrs={"data-testid": "Wind"})[0].text.replace(u'\xa0', u' ')
@@ -66,4 +65,3 @@ print('Pył PM 10: ',parsed['pm10IndexLevel']['indexLevelName'])
 with open('plan.json', 'r') as file:
     data = json.load(file)
     print(data)
-print(test)
