@@ -45,22 +45,23 @@ try:
     epd.display_4Gray(epd.getbuffer_4Gray(Limage))
     time.sleep(15)
    
-    epd.init()
+    #epd.init()
     epd.Clear()
   
 
 #my drawingepd.init_fast()
     logging.info("my test")
-    Himage = Image.new('1', (epd.width, epd.height), 255)  # 255: clear the frame
+    Limage = Image.new('L', (epd.width, epd.height), 255)  # 255: clear the frame
     draw = ImageDraw.Draw(Himage)
     ratio = epd.width/epd.height
     for x in range(0,Himage.size[1],3):        
-        draw.line((0, x, Himage.size[0]-(x*ratio), Himage.size[1]), fill=0)   
+        draw.line((0, x, Himage.size[0]-(x*ratio), Himage.size[1]), fill=epd.GRAY3)   
 
     for x in range(0,Himage.size[0],5):        
-        draw.line((x, 0, Himage.size[0], Himage.size[1]-(x*ratio)), fill=0)   
+        draw.line((x, 0, Himage.size[0], Himage.size[1]-(x*ratio)), fill=epd.GRAY2)   
     
-    epd.display(epd.getbuffer(Himage))
+    #epd.display(epd.getbuffer(Himage))
+    epd.display_4Gray(epd.getbuffer_4Gray(Limage))
     time.sleep(16)
 
 
