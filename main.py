@@ -7,7 +7,7 @@ logger.info('Initializing...')
 logger.info('Getting forecast')
 import forecast
 myForecast = forecast.Forecast()
-myForecast.PrintForecast()
+#myForecast.PrintForecast()
 
 logger.info('Getting Smog Data')
 import smog
@@ -17,13 +17,13 @@ mySmog.PrintSmog()
 logger.info('Getting Warnings Data')
 import weatherWarnings
 myWarnings = weatherWarnings.WeatherWarnings()
-myWarnings.PrintWarnings()
+#myWarnings.PrintWarnings()
 
 logger.info('Getting school plan')
 import schoolPlan
 myPlan = schoolPlan.SchoolPlan()
 myPlan.CurrentPlan()
-myPlan.PrintPlan()
+#myPlan.PrintPlan()
 
 logger.info('Getting clock')
 import clock
@@ -37,6 +37,8 @@ myPlotter.PrepareGrid()
 
 myPlan.DrawPlan(myPlotter.draw,myPlotter.fonts,0,myPlotter.firstHorizontal,myPlotter.firstVertical,myPlotter.height)
 myClock.DrawClock(myPlotter.draw,myPlotter.fonts,myPlotter.secondVertical,0,myPlotter.width,myPlotter.firstHorizontal)
-myForecast.DrawForecast(myPlotter.draw,myPlotter.fonts,myPlotter.firstVertical,myPlotter.firstHorizontal,myPlotter.width,myPlotter.secondHorizontal)
+myForecast.DrawForecast(myPlotter.draw,myPlotter.fonts,myPlotter.icons,myPlotter.firstVertical,myPlotter.fourthHorizontal,myPlotter.width,myPlotter.height)
+myForecast.DrawHourly(myPlotter.draw,myPlotter.fonts,myPlotter.icons,myPlotter.firstVertical,myPlotter.firstHorizontal,myPlotter.width,myPlotter.thirdHorizontal)
+myWarnings.DrawWarnings(myPlotter.draw,myPlotter.fonts,myPlotter.firstVertical,myPlotter.thirdHorizontal,myPlotter.width,myPlotter.fourthHorizontal)
 
 myPlotter.ShowImage()

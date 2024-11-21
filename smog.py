@@ -15,3 +15,6 @@ class Smog:
     def PrintSmog(self):   
         print('Pył PM 2.5: ',self.Smog25)
         print('Pył PM 10: ',self.Smog10)
+
+    def DrawSmog(self,draw:ImageDraw.ImageDraw,fonts,icons,x1:int,y1:int,x2:int,y2:int):
+        pass

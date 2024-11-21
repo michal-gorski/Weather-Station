@@ -11,3 +11,13 @@ def DrawDots(draw:ImageDraw.ImageDraw,x1,y1,x2,y2,step):
     for x in range(x1,x2,step):
         for y in range (y1,y2,step):
             draw.point((x,y),fill = 0)
+
+def WrappedText(text: str, font: ImageFont.ImageFont, line_length: int):
+        lines = ['']
+        for word in text.split():
+            line = f'{lines[-1]} {word}'.strip()
+            if font.getlength(line) <= line_length:
+                lines[-1] = line
+            else:
+                lines.append(word)
+        return '\n  '.join(lines)

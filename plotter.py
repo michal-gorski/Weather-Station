@@ -18,6 +18,7 @@ class Plotter:
 
 
     fonts = {}
+    icons = {}
     
 
     def __init__(self,width,height) -> None:
@@ -28,10 +29,16 @@ class Plotter:
         self.height = self.screen.height
 
         self.firstHorizontal = round(self.height * 0.2)
-        self.firstVertical = round(self.width * 0.3)
-        self.secondHorizontal = round(self.height * 0.4)
-        self.secondVertical = round(self.width - self.width * 0.2)
+        self.secondHorizontal = round(self.height * 0.2)
+        self.thirdHorizontal = round(self.height * 0.6)
+        self.fourthHorizontal = self.height - round(self.height * 0.2)
 
+
+        self.firstVertical = round(self.width * 0.3)
+        self.secondVertical = round(self.width - self.width * 0.2)
+        
+        
+        #load fonts
         path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Roboto-Medium.ttf')
         self.fonts["font30"] = ImageFont.truetype(path, 30)
         self.fonts["font24"] = ImageFont.truetype(path, 24)
@@ -59,6 +66,21 @@ class Plotter:
         self.fonts["font10bold"] = ImageFont.truetype(path, 10)
         self.fonts["font8bold"] = ImageFont.truetype(path, 8)
     
+        #load icons
+        path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Icons')
+        self.icons['cloudy_small'] = Image.open(os.path.join(path,'cloudy_small.png'))
+        self.icons['partly_cloudy_small'] = Image.open(os.path.join(path,'partly_cloudy_small.png'))
+        self.icons['rain_and_snow_small'] = Image.open(os.path.join(path,'rain_and_snow_small.png'))
+        self.icons['scattered_showers_small'] = Image.open(os.path.join(path,'scattered_showers_small.png'))
+        self.icons['mostly_cloudy_small'] = Image.open(os.path.join(path,'mostly_cloudy_small.png'))
+        self.icons['mostly_cloudy_night_small'] = Image.open(os.path.join(path,'mostly_cloudy_night_small.png'))
+        self.icons['clear_night_small'] = Image.open(os.path.join(path,'clear_night_small.png'))
+        
+        self.icons['wind_small'] = Image.open(os.path.join(path,'wind_small.png'))
+        self.icons['rain_percent_small'] = Image.open(os.path.join(path,'rain_percent_small.png'))
+        
+
+
     def PrepareGrid(self):
         import imageHelper
 
@@ -76,6 +98,15 @@ class Plotter:
         self.draw.line((self.firstVertical, self.secondHorizontal, self.width, self.secondHorizontal), fill = 0)        
         imageHelper.DrawDottedHorizontalLine(self.draw,self.firstVertical,self.secondHorizontal + 2,self.width,4)
         
+        #horizontal line3
+        self.draw.line((self.firstVertical, self.thirdHorizontal, self.width, self.thirdHorizontal), fill = 0)        
+        imageHelper.DrawDottedHorizontalLine(self.draw,self.firstVertical,self.thirdHorizontal + 2,self.width,4)
+
+        #horizontal line 4
+        self.draw.line((self.firstVertical, self.fourthHorizontal, self.width, self.fourthHorizontal), fill = 0)        
+        imageHelper.DrawDottedHorizontalLine(self.draw,self.firstVertical,self.fourthHorizontal + 2,self.width,4)
+
+
         #vertical line 2
         self.draw.line((self.secondVertical, 0, self.secondVertical, self.firstHorizontal), fill = 0)       
         imageHelper.DrawDottedVerticalLine(self.draw,self.secondVertical + 2,0,self.firstHorizontal,4) 
