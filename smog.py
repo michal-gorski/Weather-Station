@@ -1,6 +1,8 @@
 import requests
 import urllib3
 import json
+from PIL import Image,ImageDraw,ImageFont
+import imageHelper
 
 class Smog:
     Smog25 = ''
