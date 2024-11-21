@@ -3,11 +3,11 @@
     "0":["","Angielski","Muzyka","Historia","Informatyka","Geografia","Polski","Angielski","Angielski"],
     "1":["","","Matematyka","Matematyka","Polski","Polski","Biologia","Technika","Etyka"],
     "2":["","Plastyka","Matematyka","Historia","Polski","Matematyka"],
-    "3":["","Dojazd 08:50","WF","WF","Polski","Hiszpanski","Hiszpanski"],
+    "3":["","Dojazd 08:50","WF","WF","Polski","Hiszpański","Hiszpański"],
     "4":["","Angielski","Matematyka","Dojazd","Basen","Basen","GW","Angielski","Etyka"],
     "sprawdziany":[
-        {"przedmiot":"Historia","data":"27.11.2024","godzina":"3","zakres":"Dział 1"},
-        {"przedmiot":"Matematyka","data":"2.12.2024","godzina":"3","zakres":"Figury na płaszczyźnie"}
-        
+        {"przedmiot":"Historia","data":"27.11","zakres":"Polska szlachecka"},
+        {"przedmiot":"Angielski","data":"29.11","zakres":"Unit 2"},        
+        {"przedmiot":"Matematyka","data":"2.12","zakres":"Figury na płaszczyźnie"}        
     ]
 }
