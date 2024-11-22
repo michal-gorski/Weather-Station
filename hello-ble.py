@@ -38,7 +38,7 @@ async def main():
                 hum_bytes = await client.read_gatt_char(TEMP_ID)
                 hum_value = struct.unpack('f', hum_bytes.ljust(4, b'\x00'))[0]
 
-                print('temp:',temp_value,' hum: ',hum_value)    
+                print('temp:',temp_bytes,' hum: ',hum_bytes)    
 
             finally:
                 print("Disconnecting from", d)
@@ -47,3 +47,12 @@ async def main():
             break
 
 asyncio.run(main())
+
+# Given bytearray
+#byte_array = bytearray(b'\xfa\x00')
+
+# Convert bytearray to float
+# Note: The format 'f' is for a 4-byte float. Adjust as necessary.
+#float_value = struct.unpack('f', byte_array.ljust(4, b'\x00'))[0]
+
+#print(float_value)
