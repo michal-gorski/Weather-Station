@@ -16,8 +16,8 @@ async def main():
     devices = await BleakScanner.discover(timeout=10)
     for d in devices:
         print(d)
-        print(d.rssi)
-        if d.name.startswith("ATC_1CF396"):
+        print(d.name)
+        if d.name.startswith("ATC"):
             print("Connecting to", d)
             client = BleakClient(d, timeout=30)
             try:
