@@ -35,24 +35,24 @@ try:
             # Get data
             logger.info("Getting forecast")
             myForecast = forecast.Forecast()
-            myForecast.PrintForecast()
+            #myForecast.PrintForecast()
 
             logger.info("Getting Smog Data")
             mySmog = smog.Smog()
-            mySmog.PrintSmog()
+            #mySmog.PrintSmog()
 
             logger.info("Getting Warnings Data")
             myWarnings = weatherWarnings.WeatherWarnings()
-            myWarnings.PrintWarnings()
+            #myWarnings.PrintWarnings()
 
             logger.info("Getting school plan")
             myPlan = schoolPlan.SchoolPlan()
             myPlan.CurrentPlan()
-            myPlan.PrintPlan()
+            #myPlan.PrintPlan()
 
             logger.info("Getting clock")
             myClock = clock.Clock()
-            myClock.PrintClock()
+            #myClock.PrintClock()
 
             # sensor data
             if mySensor.connected:
