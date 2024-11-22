@@ -34,13 +34,13 @@ async def main():
                         
 
                 temp_bytes = await client.read_gatt_char(TEMP_ID)
-                temperature = int.from_bytes(temp_bytes[:2], byteorder='little', signed=True) / 100
-                print('temp1: ',temperature)
+                temperature = int.from_bytes(temp_bytes[:2], byteorder='little', signed=True) / 10
+                
 
                 hum_bytes = await client.read_gatt_char(TEMP_ID)
-                hum_value = struct.unpack('f', hum_bytes.ljust(4, b'\x00'))[0]
+                humidity = int.from_bytes(temp_bytes[:2], byteorder='little', signed=True) / 10
 
-                print('temp:',temp_bytes,' hum: ',hum_bytes)    
+                print('temp:',temperature,' hum: ',humidity)    
 
             finally:
                 print("Disconnecting from", d)
