@@ -24,6 +24,7 @@ mySensor.PrintSensor()
 
 logger.info("Initializing plotter")
 myPlotter = plotter.Plotter(800, 480)
+myPlotter.EpdInit()
 
 try:
     currentMinute = 0
@@ -121,10 +122,12 @@ try:
                 myPlotter.secondVertical - 100,
                 myPlotter.firstHorizontal,
             )
-            #myPlotter.ShowImage()
 
-            if myPlotter.EpdInit() == True:
+            if myPlotter.epdReady == True:
                 myPlotter.Display()
+            else:
+                myPlotter.ShowImage()
+            
 
 except KeyboardInterrupt:
     myPlotter.EpdSleep()

@@ -89,7 +89,6 @@ class Forecast:
                 self.hourForecast[hour]["icon"] = div.find_all(
                     attrs={"data-testid": "Icon"}
                 )[0].text
-                print(hour, ":", self.hourForecast[hour])
 
         except:
             print("Exception loading forecast")

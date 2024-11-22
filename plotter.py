@@ -21,6 +21,7 @@ class Plotter:
 
     fonts = {}
     icons = {}
+    epdReady = False
 
     def __init__(self, width, height) -> None:
         self.screen = Image.new("L", (width, height), 255)  # 255: clear the frame
@@ -193,9 +194,11 @@ class Plotter:
             self.epd = epd7in5_V2.EPD()
             self.epd.init()
             self.epd.Clear()
+            self.epdReady = True
             return True
         except Exception as e:
             print("Screen not found", str(e))
+            self.epdReady = False
             return False
 
     def EpdSleep(self):
