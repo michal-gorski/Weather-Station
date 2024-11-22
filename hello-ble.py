@@ -34,7 +34,8 @@ async def main():
                         
 
                 temp_bytes = await client.read_gatt_char(TEMP_ID)
-                temp_value = struct.unpack('f', temp_bytes.ljust(4, b'\x00'))[0]
+                temperature = int.from_bytes(temp_bytes[:2], byteorder='little', signed=True) / 100
+                print('temp1: ',temperature)
 
                 hum_bytes = await client.read_gatt_char(TEMP_ID)
                 hum_value = struct.unpack('f', hum_bytes.ljust(4, b'\x00'))[0]
