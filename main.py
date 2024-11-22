@@ -89,7 +89,7 @@ mySmog.DrawSmog(
     myPlotter.firstHorizontal,
 )
 
-myPlotter.ShowImage()
+#myPlotter.ShowImage()
 
 if myPlotter.EpdInit() == True:
     try:

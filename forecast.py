@@ -153,7 +153,7 @@ class Forecast:
                 iconWidth = icons[iconName].width
                 draw._image.paste(
                     icons[iconName],
-                    (leftBorder + 5 + round((70 - iconWidth) / 2), y1 + 25),
+                    (leftBorder + 5 + round((70 - iconWidth) / 2), y1 + 23),
                 )
 
                 # draw temperature
@@ -163,10 +163,10 @@ class Forecast:
                     + self.forecast[forecastDay]["Noc"]["temperature"]
                 )
                 tempTextLen = draw.textlength(
-                    temperature, font=fonts["font14"], direction=None, features=None
+                    temperature, font=fonts["font18"], direction=None, features=None
                 )
                 tempTextPos = round(leftBorder + boxWidth / 2 - tempTextLen / 2)
-                draw.text((tempTextPos, y1 + 63), temperature, 0, font=fonts["font14"])
+                draw.text((tempTextPos, y1 + 61), temperature, 0, font=fonts["font18"])
 
                 # draw wind
                 wind = (
@@ -177,7 +177,7 @@ class Forecast:
                     wind, font=fonts["font14light"], direction=None, features=None
                 )
                 windTextPos = round(leftBorder + boxWidth / 2 - windTextLen / 2)
-                draw.text((windTextPos, y1 + 78), wind, 0, font=fonts["font14light"])
+                draw.text((windTextPos, y1 + 80), wind, 0, font=fonts["font14light"])
 
                 position += 1
 
@@ -228,10 +228,10 @@ class Forecast:
                 # draw temperature
                 temperature = self.hourForecast[forecastHour]["temperature"]
                 tempTextLen = draw.textlength(
-                    temperature, font=fonts["font14"], direction=None, features=None
+                    temperature, font=fonts["font18"], direction=None, features=None
                 )
                 tempTextPos = round(leftBorder + boxWidth / 2 - tempTextLen / 2)
-                draw.text((tempTextPos, y1 + 63), temperature, 0, font=fonts["font14"])
+                draw.text((tempTextPos+2, y1 + 63), temperature, 0, font=fonts["font18"])
 
                 # draw wind
                 wind = (
@@ -242,7 +242,7 @@ class Forecast:
                     wind, font=fonts["font14light"], direction=None, features=None
                 )
                 windTextPos = round(leftBorder + boxWidth / 2 - windTextLen / 2)
-                draw.text((windTextPos, y1 + 78), wind, 0, font=fonts["font14light"])
+                draw.text((windTextPos, y1 + 88), wind, 0, font=fonts["font14light"])
 
                 # draw wind icon
                 if (
@@ -253,7 +253,7 @@ class Forecast:
                     iconWidth = icons[iconName].width
                     draw._image.paste(
                         icons[iconName],
-                        (leftBorder + round((70 - iconWidth) / 2), y1 + 96),
+                        (leftBorder + round((70 - iconWidth) / 2), y1 + 106),
                     )
 
                 # draw rain
@@ -262,7 +262,7 @@ class Forecast:
                     rain, font=fonts["font18"], direction=None, features=None
                 )
                 tempTextPos = round(leftBorder + boxWidth / 2 - tempTextLen / 2)
-                draw.text((tempTextPos + 1, y1 + 126), rain, 0, font=fonts["font14"])
+                draw.text((tempTextPos + 1, y1 + 136), rain, 0, font=fonts["font14"])
 
                 # draw rain icon
                 if (
@@ -273,7 +273,7 @@ class Forecast:
                     iconWidth = icons[iconName].width
                     draw._image.paste(
                         icons[iconName],
-                        (leftBorder + round((70 - iconWidth) / 2 - 6), y1 + 147),
+                        (leftBorder + round((70 - iconWidth) / 2 - 6), y1 + 157),
                     )
 
                 position += 1
