@@ -38,7 +38,7 @@ async def main():
                 
 
                 hum_bytes = await client.read_gatt_char(HUMIDITY_ID)
-                humidity = int.from_bytes(hum_bytes[:2], byteorder='little', signed=True) / 10
+                humidity = int.from_bytes(hum_bytes[:2], byteorder='little', signed=True) / 100
 
                 print('temp:',temperature,' hum: ',humidity)    
 
