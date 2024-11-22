@@ -133,6 +133,7 @@ class Plotter:
         epd7in5_V2.epdconfig.module_exit(cleanup=True)
 
     def Display(self):
+        self.epd.init()
         self.epd.Clear()
         self.epd.display(self.epd.getbuffer(self.screen))
 
