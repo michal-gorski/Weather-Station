@@ -87,7 +87,7 @@ class Plotter:
 
     def PrepareGrid(self):
         import imageHelper
-        self.screen = Image.new('L', (width, height), 255)  # 255: clear the frame
+        self.screen = Image.new('L', (800, 480), 255)  # 255: clear the frame
         self.draw = ImageDraw.Draw(self.screen)
                 
         #horizontal line 1
