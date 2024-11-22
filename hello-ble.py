@@ -4,7 +4,7 @@ from bleak import BleakScanner, BleakClient
 import sys
 import logging
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 # note:
 #   The default configuration of the devices is not connectable by the bluetooth HCI interface in linux.
