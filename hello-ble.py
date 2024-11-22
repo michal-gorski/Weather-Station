@@ -17,7 +17,7 @@ TEMP_ID = '00002a1f-0000-1000-8000-00805f9b34fb'
 HUMIDITY_ID = '00002a6f-0000-1000-8000-00805f9b34fb'
 
 async def main():
-    devices = await BleakScanner.discover(timeout=30)
+    devices = await BleakScanner.discover(timeout=10)
     for d in devices:
         print(d)
         print(d.name)
@@ -28,9 +28,10 @@ async def main():
                 await client.connect()
                 print("connected!")
 
-                for service in client.services:
+                for service in client.services:                    
                     for char in service.characteristics:
                         print(char)
+                        
 
                 temp_bytes = await client.read_gatt_char(TEMP_ID)
                 temp_value = struct.unpack('f', temp_bytes.ljust(4, b'\x00'))[0]
@@ -49,7 +50,7 @@ async def main():
 asyncio.run(main())
 
 # Given bytearray
-#byte_array = bytearray(b'\xfa\x00')
+byte_array = bytearray(b'\xfa\x00')
 
 # Convert bytearray to float
 # Note: The format 'f' is for a 4-byte float. Adjust as necessary.
