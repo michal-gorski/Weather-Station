@@ -99,6 +99,9 @@ class Plotter:
         self.icons["clear_night_small"] = Image.open(
             os.path.join(path, "clear_night_small.png")
         )
+        self.icons["foggy_small"] = Image.open(
+            os.path.join(path, "foggy_small.png")
+        )
         self.icons["snow_small"] = Image.open(os.path.join(path, "snow_small.png"))
         self.icons["mostly_sunny_small"] = Image.open(
             os.path.join(path, "mostly_sunny_small.png")

@@ -24,7 +24,8 @@ class Forecast:
         "Scattered Snow Night": "scattered_snow_night",
         "Clear Night": "clear_night",
         "Mostly Sunny": "mostly_sunny",
-        "Mostly Clear Night": "mostly_clear_night"
+        "Mostly Clear Night": "mostly_clear_night",
+        "Foggy":'foggy'
     }
 
     def __init__(
