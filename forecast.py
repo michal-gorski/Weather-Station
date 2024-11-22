@@ -11,7 +11,7 @@ class Forecast:
     hourForecast = {}
     icons = {
         "Mostly Cloudy": "mostly_cloudy",
-        "Partly Cloudy Night": "partly_cloudy",
+        "Partly Cloudy Night": "partly_cloudy_night",
         "Scattered Showers Night": "scattered_showers_night",
         "Scattered Showers": "scattered_showers",
         "Partly Cloudy": "partly_cloudy",
