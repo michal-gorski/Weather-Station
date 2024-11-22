@@ -1,3 +1,10 @@
+import os
+import sys
+
+libdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "lywsd03mmc")
+if os.path.exists(libdir):
+    sys.path.append(libdir)
+    
 from lywsd03mmc.lywsd03mmc_client import Lywsd03mmcClient
 import asyncio
 

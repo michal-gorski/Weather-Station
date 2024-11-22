@@ -1,10 +1,17 @@
-from lywsd03mmc.lywsd03mmc_client import Lywsd03mmcClientSyncContext, Lywsd03mmcData
+import os
+import sys
 
-MAC_ADDRESS_OR_UUID = '70C40C24-C60B-BB9D-D737-9895C5DA52F3'
+libdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "lywsd03mmc")
+if os.path.exists(libdir):
+    sys.path.append(libdir)
+
+from lywsd03mmc_client import Lywsd03mmcClientSyncContext, Lywsd03mmcData
+
+MAC_ADDRESS_OR_UUID = 'A4:C1:38:1C:F3:96'
 
 while True:
     try:
-        with Lywsd03mmcClientSyncContext(MAC_ADDRESS_OR_UUID, timeout_sec=60) as client:
+        with Lywsd03mmcClientSyncContext(MAC_ADDRESS_OR_UUID, timeout_sec=30) as client:
             data: Lywsd03mmcData = client.get_data()
             print(data)
     except Exception as ex:
