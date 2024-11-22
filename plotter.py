@@ -2,8 +2,6 @@ import sys
 import os
 from PIL import Image,ImageDraw,ImageFont
 
-
-
 class Plotter:
     screen = ''
     draw = ''   
@@ -112,6 +110,9 @@ class Plotter:
         imageHelper.DrawDottedVerticalLine(self.draw,self.secondVertical + 2,0,self.firstHorizontal,4) 
 
     def EpdInit(self):
+        libdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib')
+        if os.path.exists(libdir):
+            sys.path.append(libdir)
         try:
             from waveshare_epd import epd7in5_V2
             self.epd = epd7in5_V2.EPD()
