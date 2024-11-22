@@ -87,7 +87,9 @@ class Plotter:
 
     def PrepareGrid(self):
         import imageHelper
-
+        self.screen = Image.new('L', (width, height), 255)  # 255: clear the frame
+        self.draw = ImageDraw.Draw(self.screen)
+                
         #horizontal line 1
         self.draw.line((0, self.firstHorizontal, self.width, self.firstHorizontal), fill = 0)        
         imageHelper.DrawDottedHorizontalLine(self.draw,0,self.firstHorizontal + 2,self.width,4)
@@ -133,8 +135,7 @@ class Plotter:
         epd7in5_V2.epdconfig.module_exit(cleanup=True)
 
     def Display(self):
-        self.epd.init()
-        self.epd.Clear()
+        
         self.epd.display(self.epd.getbuffer(self.screen))
 
     def ShowImage(self):
