@@ -81,18 +81,21 @@ class Sensor:
             return False
 
     async def GetData(self):
+        try:
+            temp_bytes = await self.client.read_gatt_char(self.TEMP_ID)
+            self.temperature = (
+                int.from_bytes(temp_bytes[:2], byteorder="little", signed=True) / 10
+            )
 
-        temp_bytes = await self.client.read_gatt_char(self.TEMP_ID)
-        self.temperature = (
-            int.from_bytes(temp_bytes[:2], byteorder="little", signed=True) / 10
-        )
+            hum_bytes = await self.client.read_gatt_char(self.HUMIDITY_ID)
+            self.humidity = (
+                int.from_bytes(hum_bytes[:2], byteorder="little", signed=True) / 100
+            )
 
-        hum_bytes = await self.client.read_gatt_char(self.HUMIDITY_ID)
-        self.humidity = (
-            int.from_bytes(hum_bytes[:2], byteorder="little", signed=True) / 100
-        )
-
-        print("temp:", self.temperature, " hum: ", self.humidity)
+            print("temp:", self.temperature, " hum: ", self.humidity)
+        except Exception as e:
+            self.connected = False
+            print(str(e))
 
     async def Disconnect(self):
         print("Disconnecting from", self.device)
