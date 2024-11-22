@@ -77,6 +77,9 @@ class Plotter:
         self.icons["partly_cloudy_small"] = Image.open(
             os.path.join(path, "partly_cloudy_small.png")
         )
+        self.icons["partly_cloudy_night_small"] = Image.open(
+            os.path.join(path, "partly_cloudy_night_small.png")
+        )
         self.icons["rain_and_snow_small"] = Image.open(
             os.path.join(path, "rain_and_snow_small.png")
         )
