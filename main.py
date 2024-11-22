@@ -45,7 +45,7 @@ myForecast.DrawHourly(myPlotter.draw,myPlotter.fonts,myPlotter.icons,myPlotter.f
 myWarnings.DrawWarnings(myPlotter.draw,myPlotter.fonts,myPlotter.firstVertical,myPlotter.thirdHorizontal,myPlotter.width,myPlotter.fourthHorizontal)
 mySmog.DrawSmog(myPlotter.draw,myPlotter.fonts,myPlotter.secondVertical - 100,0,myPlotter.secondVertical,myPlotter.firstHorizontal)
 
-myPlotter.ShowImage()
+#myPlotter.ShowImage()
 
 if myPlotter.EpdInit() == True:
     try:
