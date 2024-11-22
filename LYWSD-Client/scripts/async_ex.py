@@ -4,11 +4,11 @@ import sys
 libdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "lywsd03mmc")
 if os.path.exists(libdir):
     sys.path.append(libdir)
-    
-from lywsd03mmc.lywsd03mmc_client import Lywsd03mmcClient
+
+from lywsd03mmc_client import Lywsd03mmcClient,Lywsd03mmcClientSyncContext, Lywsd03mmcData
 import asyncio
 
-MAC_ADDRESS_OR_UUID = '70C40C24-C60B-BB9D-D737-9895C5DA52F3'
+MAC_ADDRESS_OR_UUID = 'A4:C1:38:1C:F3:96'
 
 
 async def main(address):
