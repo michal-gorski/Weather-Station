@@ -10,7 +10,7 @@ class WeatherWarnings:
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         response = requests.get('https://danepubliczne.imgw.pl/api/data/warningsmeteo',verify=False)
         parsed = response.json()
-        if parsed['status'] != False:
+        if parsed[0] != None:
             filteredEvent = [event for event in parsed if "2261" in event['teryt']]
             
             for event in filteredEvent:            

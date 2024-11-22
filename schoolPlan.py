@@ -35,7 +35,7 @@ class SchoolPlan:
         return self.currentPlan
 
     def PlanForDay(self,day):
-        if (day < 0 or day > 5):
+        if (day < 0 or day > 4):
             return self.planData['0']
         else:
             return self.planData[str(day)]
