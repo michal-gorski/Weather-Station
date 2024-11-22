@@ -51,6 +51,7 @@ class SchoolPlan:
         elif self.dayOfWeek == 2: return "środa"
         elif self.dayOfWeek == 3: return "czwartek"
         elif self.dayOfWeek == 4: return "piątek"
+        elif self.dayOfWeek > 4: return "poniedziałek"
         else: return ''
 
     def DrawPlan(self,draw:ImageDraw.ImageDraw,fonts,x1:int,y1:int,x2:int,y2:int):
