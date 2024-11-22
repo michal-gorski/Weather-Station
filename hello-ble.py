@@ -3,6 +3,8 @@ from bleak import BleakScanner, BleakClient
 
 import sys
 import logging
+import struct
+
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
@@ -12,6 +14,7 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 #       default HCI timeout and the devices will be connectable.
 
 TEMP_ID = '00002a1f-0000-1000-8000-00805f9b34fb'
+HUMIDITY_ID = '00002a6f-0000-1000-8000-00805f9b34fb'
 
 async def main():
     devices = await BleakScanner.discover(timeout=30)
@@ -30,7 +33,12 @@ async def main():
                         print(char)
 
                 temp_bytes = await client.read_gatt_char(TEMP_ID)
-                print('temp',temp_bytes)    
+                temp_value = struct.unpack('f', temp_bytes.ljust(4, b'\x00'))[0]
+
+                hum_bytes = await client.read_gatt_char(TEMP_ID)
+                hum_value = struct.unpack('f', hum_bytes.ljust(4, b'\x00'))[0]
+
+                print('temp:',temp_value,' hum: ',hum_value)    
 
             finally:
                 print("Disconnecting from", d)
