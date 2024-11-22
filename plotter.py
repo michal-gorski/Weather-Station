@@ -63,6 +63,7 @@ class Plotter:
         path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "Roboto-Bold.ttf"
         )
+        self.fonts["font48bold"] = ImageFont.truetype(path, 48)
         self.fonts["font30bold"] = ImageFont.truetype(path, 30)
         self.fonts["font24bold"] = ImageFont.truetype(path, 24)
         self.fonts["font18bold"] = ImageFont.truetype(path, 18)

@@ -6,6 +6,7 @@ import smog
 import forecast
 import logging
 import datetime
+import sensor
 
 
 logger = logging.getLogger(__name__)
@@ -33,6 +34,10 @@ myPlan.CurrentPlan()
 logger.info("Getting clock")
 myClock = clock.Clock()
 myClock.PrintClock()
+
+logger.info("Getting sensor data")
+mySensor = sensor.Sensor()
+mySensor.PrintSensor()
 
 logger.info("Initializing plotter")
 myPlotter = plotter.Plotter(800, 480)
@@ -89,7 +94,16 @@ mySmog.DrawSmog(
     myPlotter.firstHorizontal,
 )
 
-#myPlotter.ShowImage()
+mySensor.DrawSensor(
+    myPlotter.draw,
+    myPlotter.fonts,
+    0,
+    0,
+    myPlotter.secondVertical - 100,
+    myPlotter.firstHorizontal,
+)
+
+myPlotter.ShowImage()
 
 if myPlotter.EpdInit() == True:
     try:
