@@ -4,7 +4,7 @@ import json
 from PIL import Image,ImageDraw,ImageFont
 import imageHelper
 
-class WeatherWarnings:
+class WeatherWarnings: 
     weatherWarning = []
     def __init__(self) -> None:
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
