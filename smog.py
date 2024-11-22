@@ -18,5 +18,12 @@ class Smog:
         print('Pył PM 2.5: ',self.Smog25)
         print('Pył PM 10: ',self.Smog10)
 
-    def DrawSmog(self,draw:ImageDraw.ImageDraw,fonts,icons,x1:int,y1:int,x2:int,y2:int):
-        pass
+    def DrawSmog(self,draw:ImageDraw.ImageDraw,fonts,x1:int,y1:int,x2:int,y2:int):
+        draw.text((x1,y1+9),"Pył PM 2.5: ",fill=0,font=fonts['font14light'])
+        draw.text((x1,y1+24),self.Smog25,fill=0,font=fonts['font14'])
+
+
+        draw.text((x1,y1+51),"Pył PM 10: ",fill=0,font=fonts['font14light'])
+        draw.text((x1,y1+66),self.Smog10,fill=0,font=fonts['font14'])
+
+        imageHelper.DrawDottedVerticalLine(draw,x1-15,y1,y2,4)

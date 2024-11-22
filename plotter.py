@@ -75,6 +75,8 @@ class Plotter:
         self.icons['mostly_cloudy_small'] = Image.open(os.path.join(path,'mostly_cloudy_small.png'))
         self.icons['mostly_cloudy_night_small'] = Image.open(os.path.join(path,'mostly_cloudy_night_small.png'))
         self.icons['clear_night_small'] = Image.open(os.path.join(path,'clear_night_small.png'))
+        self.icons['snow_small'] = Image.open(os.path.join(path,'snow_small.png'))
+        self.icons['mostly_sunny_small'] = Image.open(os.path.join(path,'mostly_sunny_small.png'))
         
         self.icons['wind_small'] = Image.open(os.path.join(path,'wind_small.png'))
         self.icons['rain_percent_small'] = Image.open(os.path.join(path,'rain_percent_small.png'))
@@ -83,8 +85,6 @@ class Plotter:
 
     def PrepareGrid(self):
         import imageHelper
-
-        
 
         #horizontal line 1
         self.draw.line((0, self.firstHorizontal, self.width, self.firstHorizontal), fill = 0)        
@@ -112,10 +112,15 @@ class Plotter:
         imageHelper.DrawDottedVerticalLine(self.draw,self.secondVertical + 2,0,self.firstHorizontal,4) 
 
     def EpdInit(self):
-        from waveshare_epd import epd7in5_V2
-        self.epd = epd7in5_V2.EPD()
-        self.epd.init()
-        self.epd.Clear()
+        try:
+            from waveshare_epd import epd7in5_V2
+            self.epd = epd7in5_V2.EPD()
+            self.epd.init()
+            self.epd.Clear()
+            return True
+        except Exception:
+            print('Screen not found')
+            return False
     
     def EpdSleep(self):
         self.epd.init()

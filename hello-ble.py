@@ -29,7 +29,7 @@ async def main():
                     for char in service.characteristics:
                         print(char)
 
-                temp_bytes = await client.read_gatt_char(TEMP_ID)
+                temp_bytes = client.read_gatt_char(TEMP_ID)
                 print('temp',temp_bytes)    
 
             finally:
