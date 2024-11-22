@@ -23,11 +23,11 @@ class WeatherWarnings:
 
     def DrawWarnings(self,draw:ImageDraw.ImageDraw,fonts,x1:int,y1:int,x2:int,y2:int):
         if len(self.weatherWarning) == 0:
-            draw.text((x1+5,y1+8),"• Brak ostrzeżeń",0,fonts['font14light'])
+            draw.text((x1+5,y1+8),"• Brak ostrzeżeń",0,fonts['font18light'])
         elif len(self.weatherWarning) == 1:
-            wrappedText = imageHelper.WrappedText('• '+self.weatherWarning[0],fonts['font14light'],x2-x1-10)
-            draw.text((x1+5,y1+8),wrappedText,0,fonts['font14light'])
+            wrappedText = imageHelper.WrappedText('• '+self.weatherWarning[0],fonts['font18light'],x2-x1-10)
+            draw.text((x1+5,y1+8),wrappedText,0,fonts['font18light'])
         elif len(self.weatherWarning) >= 1:
             for warning in self.weatherWarning:
-                wrappedText = imageHelper.WrappedText('• '+warning,fonts['font10light'],x2-x1-10)
-                draw.text((x1+5,y1+8),wrappedText,0,fonts['font10light'])
+                wrappedText = imageHelper.WrappedText('• '+warning,fonts['font14light'],x2-x1-10)
+                draw.text((x1+5,y1+8),wrappedText,0,fonts['font14light'])
