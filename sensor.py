@@ -19,7 +19,7 @@ class Sensor:
     connected = False
 
     def __init__(self) -> None:
-        asyncio.run(self.Connect())
+        pass
 
     def PrintSensor(self):
         print(
@@ -82,6 +82,7 @@ class Sensor:
 
     async def GetData(self):
         try:
+            print('getting data from sensor:',str(self.device))
             temp_bytes = await self.client.read_gatt_char(self.TEMP_ID)
             self.temperature = (
                 int.from_bytes(temp_bytes[:2], byteorder="little", signed=True) / 10

@@ -57,7 +57,7 @@ try:
             # sensor data
             if mySensor.connected:
                 asyncio.run(mySensor.GetData())
-                mySensor.PrintSensor()
+                
 
             # draw data
             myPlotter.PrepareGrid()
