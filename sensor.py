@@ -11,8 +11,8 @@ class Sensor:
     TEMP_ID = "00002a1f-0000-1000-8000-00805f9b34fb"
     HUMIDITY_ID = "00002a6f-0000-1000-8000-00805f9b34fb"
 
-    temperature = 24.1
-    humidity = 38
+    temperature = 0
+    humidity = 0
     sensorName = "Taras"
     client = ""
     device = ""
@@ -59,8 +59,9 @@ class Sensor:
             for d in devices:
                 print(d)
                 print(d.name)
-                self.device = d
-                if d.name.startswith("ATC"):
+                
+                if d.name != None and d.name.startswith("ATC"):
+                    self.device = d
                     print("Connecting to", d)
                     client = BleakClient(d, timeout=30)
 
@@ -73,6 +74,7 @@ class Sensor:
 
                     self.client = client
                     self.connected = True
+                    await self.GetData()
                     return True
         except Exception as e:
             print(str(e))
