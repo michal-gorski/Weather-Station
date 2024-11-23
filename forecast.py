@@ -77,7 +77,7 @@ class Forecast:
                 if testId == "DetailsSummary":
                     filteredDivs.append(div)
 
-            for div in filteredDivs:
+            for div in filteredDivs[:23]:
                 hour = div.h2.text
                 self.hourForecast[hour] = dict()
                 self.hourForecast[hour]["temperature"] = div.find_all(

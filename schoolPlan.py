@@ -68,11 +68,14 @@ class SchoolPlan:
         if self.currentPlan == '': self.CurrentPlan()
         
         position = 0
-        for lekcja in self.currentPlan:            
+        lessonNumber = 0
+        for lekcja in self.currentPlan:   
+            planHour = self.planData["lekcje"][lessonNumber]    
+            lessonNumber += 1    
             if lekcja != '':
                 lessonPos = header + 8 + position * 30
                 
-                planHour = self.planData["lekcje"][self.currentPlan.index(lekcja)]
+                
                 draw.text((x1+15, lessonPos-6), planHour, font = fonts["font14light"], fill = 0)
                 draw.text((x1+60, lessonPos -6), lekcja, font = fonts["font14light"], fill = 0)
         

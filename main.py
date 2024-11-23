@@ -20,8 +20,7 @@ class WeatherStation:
         
         self.mySensor = sensor.Sensor()
 
-        if await self.mySensor.Connect():
-            self.mySensor.PrintSensor()
+        #await self.mySensor.Connect()
 
         self.myPlotter = plotter.Plotter(800, 480)
         
