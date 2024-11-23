@@ -117,7 +117,7 @@ class Plotter:
 
     def PrepareGrid(self):
         import imageHelper
-        myLogger("Drawing grid")
+        myLogger.Log("Drawing grid")
         self.screen = Image.new("L", (800, 480), 255)  # 255: clear the frame
         self.draw = ImageDraw.Draw(self.screen)
 
