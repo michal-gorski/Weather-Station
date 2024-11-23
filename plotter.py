@@ -200,7 +200,7 @@ class Plotter:
             myLogger.Log("EPD Init OK")
             return True
         except Exception as e:
-            myLogger.Log("Screen not found", str(e))
+            myLogger.Log("Screen not found: "+ str(e))
             self.epdReady = False
             return False
 

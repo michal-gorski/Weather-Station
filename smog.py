@@ -20,7 +20,7 @@ class Smog:
         self.Smog10 = parsed["pm10IndexLevel"]["indexLevelName"]
         self.Smog25 = parsed["pm25IndexLevel"]["indexLevelName"]
 
-        myLogger.Log("Smog collected: ",self.Smog10," | ", self.Smog25)
+        myLogger.Log("Smog collected: " + self.Smog10 + " | " + self.Smog25)
 
     def PrintSmog(self):
         print("Pył PM 2.5: ", self.Smog25)

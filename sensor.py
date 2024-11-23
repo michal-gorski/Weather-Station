@@ -59,15 +59,15 @@ class Sensor:
         try:
             devices = await BleakScanner.discover(timeout=10)
             for d in devices:
-                myLogger.Log("Found device: ",d)
+                myLogger.Log("Found device: " + str(d))
                 
                 if d.name != None and d.name.startswith("ATC"):
                     self.device = d
-                    myLogger.Log("Connecting to: ",d)
+                    myLogger.Log("Connecting to: " + str(d))
                     client = BleakClient(d, timeout=30)
 
                     await client.connect()
-                    myLogger.Log("Connected to: ",d)
+                    myLogger.Log("Connected to: " + str(d))
 
                     #for service in client.services:
                     #    for char in service.characteristics:
@@ -85,7 +85,7 @@ class Sensor:
 
     async def GetData(self):
         try:
-            myLogger.Log('getting data from sensor:',str(self.device))
+            myLogger.Log('getting data from sensor:' + str(self.device))
             temp_bytes = await self.client.read_gatt_char(self.TEMP_ID)
             self.temperature = (
                 int.from_bytes(temp_bytes[:2], byteorder="little", signed=True) / 10
@@ -96,11 +96,11 @@ class Sensor:
                 int.from_bytes(hum_bytes[:2], byteorder="little", signed=True) / 100
             )
 
-            myLogger.Log("temp:", self.temperature, " hum: ", self.humidity)
+            myLogger.Log("temp:" + str(self.temperature) + " hum: " + str(self.humidity))
         except Exception as e:
             self.connected = False
             print(str(e))
 
     async def Disconnect(self):
-        myLogger.Log("Disconnecting from", self.device)
+        myLogger.Log("Disconnecting from" + str(self.device))
         await self.client.disconnect()

@@ -94,7 +94,7 @@ class Forecast:
                 )[0].text
 
         except Exception as e:
-            myLogger.Log("Exception loading forecast:",str(e))
+            myLogger.Log("Exception loading forecast: " + str(e))
 
     def PrintForecast(self):
         for forecastDay in self.forecast:

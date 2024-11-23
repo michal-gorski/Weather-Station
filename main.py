@@ -17,7 +17,6 @@ class WeatherStation:
 
     async def RunWeatherStation(self):        
         
-        myLogger.Log("Connecting to Sensor")
         self.mySensor = sensor.Sensor()
 
         if await self.mySensor.Connect():
@@ -25,7 +24,6 @@ class WeatherStation:
 
         self.myPlotter = plotter.Plotter(800, 480)
         
-        myLogger.Log("Starting EPD init")
         self.myPlotter.EpdInit()
 
         

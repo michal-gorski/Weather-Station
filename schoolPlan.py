@@ -32,7 +32,7 @@ class SchoolPlan:
             dayOfWeek = 0
         
         self.dayOfWeek = dayOfWeek
-        myLogger.Log("Getting plan for current day:",dayOfWeek)
+        myLogger.Log("Getting plan for current day: " + str(dayOfWeek))
 
         self.currentPlan = self.PlanForDay(dayOfWeek)
         return self.currentPlan

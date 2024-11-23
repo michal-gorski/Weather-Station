@@ -17,7 +17,7 @@ class WeatherWarnings:
             
             for event in filteredEvent:            
                 self.weatherWarning.append(event['tresc'])   
-        myLogger.Log("Received ",len(self.weatherWarning)," warnings.")
+        myLogger.Log("Received " + str(len(self.weatherWarning)) + " warnings.")
 
     def PrintWarnings(self):   
         for warning in self.weatherWarning:
