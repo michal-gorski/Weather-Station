@@ -214,7 +214,7 @@ class Plotter:
         epd7in5_V2.epdconfig.module_exit(cleanup=True)
 
     def Display(self):
-
+        myLogger.Log("Displaying forecast")
         self.epd.display(self.epd.getbuffer(self.screen))
 
     def ShowImage(self):

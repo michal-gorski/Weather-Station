@@ -34,14 +34,12 @@ class WeatherStation:
                 currentMinute = datetime.datetime.now().minute
 
                 # Get data
-                self.myForecast = forecast.Forecast()
-
-                self.mySmog = smog.Smog()
-
-                self.myWarnings = weatherWarnings.WeatherWarnings()
-
-                self.myPlan = schoolPlan.SchoolPlan()
-                self.myPlan.CurrentPlan()
+                if self.myForecast == None or currentMinute % 10 == 0:
+                    self.myForecast = forecast.Forecast()                
+                    self.mySmog = smog.Smog()
+                    self.myWarnings = weatherWarnings.WeatherWarnings()
+                    self.myPlan = schoolPlan.SchoolPlan()
+                    self.myPlan.CurrentPlan()
 
                 self.myClock = clock.Clock()
 
@@ -119,8 +117,6 @@ class WeatherStation:
                 else:
                     self.myPlotter.ShowImage()
             
-
-
 if __name__ == "__main__":
     try:
         weatherStation = WeatherStation()
