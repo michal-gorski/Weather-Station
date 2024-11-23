@@ -11,6 +11,7 @@ import myLogger
 
 class WeatherStation:
     
+    myForecast = None
     
     def __init__(self) -> None:
         pass
