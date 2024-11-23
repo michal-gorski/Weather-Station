@@ -1,6 +1,7 @@
 import sys
 import os
 from PIL import Image, ImageDraw, ImageFont
+import myLogger
 
 libdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "lib")
 if os.path.exists(libdir):
@@ -24,6 +25,7 @@ class Plotter:
     epdReady = False
 
     def __init__(self, width, height) -> None:
+        myLogger.Log("Preparing plotter")
         self.screen = Image.new("L", (width, height), 255)  # 255: clear the frame
         self.draw = ImageDraw.Draw(self.screen)
 
@@ -115,7 +117,7 @@ class Plotter:
 
     def PrepareGrid(self):
         import imageHelper
-
+        myLogger("Drawing grid")
         self.screen = Image.new("L", (800, 480), 255)  # 255: clear the frame
         self.draw = ImageDraw.Draw(self.screen)
 
@@ -187,7 +189,7 @@ class Plotter:
         )
 
     def EpdInit(self):
-
+        myLogger.Log("Starting EPD init")
         try:
             from waveshare_epd import epd7in5_V2
 
@@ -195,13 +197,15 @@ class Plotter:
             self.epd.init()
             self.epd.Clear()
             self.epdReady = True
+            myLogger.Log("EPD Init OK")
             return True
         except Exception as e:
-            print("Screen not found", str(e))
+            myLogger.Log("Screen not found", str(e))
             self.epdReady = False
             return False
 
     def EpdSleep(self):
+        myLogger.Log("Putting EPD to sleep")
         self.epd.init()
         self.epd.Clear()
         self.epd.sleep()

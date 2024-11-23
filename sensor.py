@@ -1,5 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 import imageHelper
+import myLogger
 
 import asyncio
 from bleak import BleakScanner, BleakClient
@@ -54,37 +55,37 @@ class Sensor:
         imageHelper.DrawDottedVerticalLine(draw, 280, 0, y2, 4)
 
     async def Connect(self) -> bool:
+        myLogger.Log("Starting Sensor connection")
         try:
             devices = await BleakScanner.discover(timeout=10)
             for d in devices:
-                print(d)
-                print(d.name)
+                myLogger.Log("Found device: ",d)
                 
                 if d.name != None and d.name.startswith("ATC"):
                     self.device = d
-                    print("Connecting to", d)
+                    myLogger.Log("Connecting to: ",d)
                     client = BleakClient(d, timeout=30)
 
                     await client.connect()
-                    print("connected!")
+                    myLogger.Log("Connected to: ",d)
 
-                    for service in client.services:
-                        for char in service.characteristics:
-                            print(char)
+                    #for service in client.services:
+                    #    for char in service.characteristics:
+                    #        print(char)
 
                     self.client = client
                     self.connected = True
                     await self.GetData()
                     return True
         except Exception as e:
-            print(str(e))
+            myLogger.Log(str(e))
             self.client = ""
             self.connected = False
             return False
 
     async def GetData(self):
         try:
-            print('getting data from sensor:',str(self.device))
+            myLogger.Log('getting data from sensor:',str(self.device))
             temp_bytes = await self.client.read_gatt_char(self.TEMP_ID)
             self.temperature = (
                 int.from_bytes(temp_bytes[:2], byteorder="little", signed=True) / 10
@@ -95,11 +96,11 @@ class Sensor:
                 int.from_bytes(hum_bytes[:2], byteorder="little", signed=True) / 100
             )
 
-            print("temp:", self.temperature, " hum: ", self.humidity)
+            myLogger.Log("temp:", self.temperature, " hum: ", self.humidity)
         except Exception as e:
             self.connected = False
             print(str(e))
 
     async def Disconnect(self):
-        print("Disconnecting from", self.device)
+        myLogger.Log("Disconnecting from", self.device)
         await self.client.disconnect()

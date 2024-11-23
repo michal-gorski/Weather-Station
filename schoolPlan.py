@@ -3,6 +3,7 @@ import sys
 import os
 from PIL import Image,ImageDraw,ImageFont
 import imageHelper
+import myLogger
 
 
 class SchoolPlan:
@@ -13,7 +14,7 @@ class SchoolPlan:
 
     def __init__(self) -> None:
         planPath = os.path.join(os.path.dirname(os.path.realpath(__file__)),'plan.json')
-
+        myLogger.Log("Getting School Plan")
         with open(planPath, 'r') as file:
             self.planData = json.load(file)
         
@@ -31,6 +32,8 @@ class SchoolPlan:
             dayOfWeek = 0
         
         self.dayOfWeek = dayOfWeek
+        myLogger.Log("Getting plan for current day:",dayOfWeek)
+
         self.currentPlan = self.PlanForDay(dayOfWeek)
         return self.currentPlan
 

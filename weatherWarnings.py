@@ -3,10 +3,12 @@ import urllib3
 import json
 from PIL import Image,ImageDraw,ImageFont
 import imageHelper
+import myLogger
 
 class WeatherWarnings: 
     weatherWarning = []
     def __init__(self) -> None:
+        myLogger.Log("Getting weather warnings")
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         response = requests.get('https://danepubliczne.imgw.pl/api/data/warningsmeteo',verify=False)
         parsed = response.json()
@@ -15,7 +17,8 @@ class WeatherWarnings:
             
             for event in filteredEvent:            
                 self.weatherWarning.append(event['tresc'])   
-        
+        myLogger.Log("Received ",len(self.weatherWarning)," warnings.")
+
     def PrintWarnings(self):   
         for warning in self.weatherWarning:
             print(warning)

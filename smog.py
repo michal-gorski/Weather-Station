@@ -3,6 +3,7 @@ import urllib3
 import json
 from PIL import Image, ImageDraw, ImageFont
 import imageHelper
+import myLogger
 
 
 class Smog:
@@ -10,6 +11,7 @@ class Smog:
     Smog10 = ""
 
     def __init__(self) -> None:
+        myLogger.Log("Getting data on smog")
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         response = requests.get(
             "https://api.gios.gov.pl/pjp-api/rest/aqindex/getIndex/736", verify=False
@@ -17,6 +19,8 @@ class Smog:
         parsed = response.json()
         self.Smog10 = parsed["pm10IndexLevel"]["indexLevelName"]
         self.Smog25 = parsed["pm25IndexLevel"]["indexLevelName"]
+
+        myLogger.Log("Smog collected: ",self.Smog10," | ", self.Smog25)
 
     def PrintSmog(self):
         print("Pył PM 2.5: ", self.Smog25)

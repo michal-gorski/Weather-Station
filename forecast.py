@@ -4,6 +4,7 @@ import urllib3
 from PIL import Image, ImageDraw, ImageFont
 import imageHelper
 import re
+import myLogger
 
 
 class Forecast:
@@ -33,6 +34,7 @@ class Forecast:
         url="https://weather.com/pl-PL/weather/tenday/l/93409ef628e2eccc8fe84493beb24470c722d12ef4632a9c49250af345ba81ef",
     ):
         try:
+            myLogger.Log("Getting forecast")
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
             response = requests.get(url, verify=False)
             soup = BeautifulSoup(response.text, "html.parser")
@@ -63,6 +65,7 @@ class Forecast:
                     attrs={"data-testid": "weatherIcon"}
                 )[0].text
 
+            myLogger.Log("Getting hourly forecast")
             url = "https://weather.com/pl-PL/pogoda/godzinowa/l/93409ef628e2eccc8fe84493beb24470c722d12ef4632a9c49250af345ba81ef"
             response = requests.get(url, verify=False)
             soup = BeautifulSoup(response.text, "html.parser")
@@ -90,8 +93,8 @@ class Forecast:
                     attrs={"data-testid": "Icon"}
                 )[0].text
 
-        except:
-            print("Exception loading forecast")
+        except Exception as e:
+            myLogger.Log("Exception loading forecast:",str(e))
 
     def PrintForecast(self):
         for forecastDay in self.forecast:

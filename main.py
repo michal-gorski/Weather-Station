@@ -4,31 +4,31 @@ import schoolPlan
 import weatherWarnings
 import smog
 import forecast
-import logging
 import datetime
 import sensor
 import asyncio
+import myLogger
 
-async def WeatherStation():
-    logger = logging.getLogger(__name__)
+class WeatherStation:
+    
+    
+    def __init__(self) -> None:
+        pass
 
-    logging.basicConfig(filename="myapp.log", level=logging.INFO)
-    logger.info("Initializing...")
+    async def RunWeatherStation(self):        
+        
+        myLogger.Log("Connecting to Sensor")
+        self.mySensor = sensor.Sensor()
 
+        if await self.mySensor.Connect():
+            self.mySensor.PrintSensor()
 
-    logger.info("Getting sensor data")
-    mySensor = sensor.Sensor()
-
+        self.myPlotter = plotter.Plotter(800, 480)
+        
+        myLogger.Log("Starting EPD init")
+        self.myPlotter.EpdInit()
 
         
-    if await mySensor.Connect():
-        mySensor.PrintSensor()
-
-    logger.info("Initializing plotter")
-    myPlotter = plotter.Plotter(800, 480)
-    myPlotter.EpdInit()
-
-    try:
         currentMinute = 0
         while True:
             if datetime.datetime.now().minute != currentMinute:
@@ -36,106 +36,99 @@ async def WeatherStation():
                 currentMinute = datetime.datetime.now().minute
 
                 # Get data
-                logger.info("Getting forecast")
-                myForecast = forecast.Forecast()
-                #myForecast.PrintForecast()
+                self.myForecast = forecast.Forecast()
 
-                logger.info("Getting Smog Data")
-                mySmog = smog.Smog()
-                #mySmog.PrintSmog()
+                self.mySmog = smog.Smog()
 
-                logger.info("Getting Warnings Data")
-                myWarnings = weatherWarnings.WeatherWarnings()
-                #myWarnings.PrintWarnings()
+                self.myWarnings = weatherWarnings.WeatherWarnings()
 
-                logger.info("Getting school plan")
-                myPlan = schoolPlan.SchoolPlan()
-                myPlan.CurrentPlan()
-                #myPlan.PrintPlan()
+                self.myPlan = schoolPlan.SchoolPlan()
+                self.myPlan.CurrentPlan()
 
-                logger.info("Getting clock")
-                myClock = clock.Clock()
-                #myClock.PrintClock()
+                self.myClock = clock.Clock()
 
                 # sensor data
-                if mySensor.connected:
-                    await mySensor.GetData()
+                if self.mySensor.connected:
+                    await self.mySensor.GetData()
                     
 
                 # draw data
-                myPlotter.PrepareGrid()
+                myLogger.Log("Starting redraw")
+                self.myPlotter.PrepareGrid()
 
-                myPlan.DrawPlan(
-                    myPlotter.draw,
-                    myPlotter.fonts,
+                self.myPlan.DrawPlan(
+                    self.myPlotter.draw,
+                    self.myPlotter.fonts,
                     0,
-                    myPlotter.firstHorizontal,
-                    myPlotter.firstVertical,
-                    myPlotter.height,
+                    self.myPlotter.firstHorizontal,
+                    self.myPlotter.firstVertical,
+                    self.myPlotter.height,
                 )
-                myClock.DrawClock(
-                    myPlotter.draw,
-                    myPlotter.fonts,
-                    myPlotter.secondVertical,
+                self.myClock.DrawClock(
+                    self.myPlotter.draw,
+                    self.myPlotter.fonts,
+                    self.myPlotter.secondVertical,
                     0,
-                    myPlotter.width,
-                    myPlotter.firstHorizontal,
+                    self.myPlotter.width,
+                    self.myPlotter.firstHorizontal,
                 )
-                myForecast.DrawForecast(
-                    myPlotter.draw,
-                    myPlotter.fonts,
-                    myPlotter.icons,
-                    myPlotter.firstVertical,
-                    myPlotter.fourthHorizontal,
-                    myPlotter.width,
-                    myPlotter.height,
+                self.myForecast.DrawForecast(
+                    self.myPlotter.draw,
+                    self.myPlotter.fonts,
+                    self.myPlotter.icons,
+                    self.myPlotter.firstVertical,
+                    self.myPlotter.fourthHorizontal,
+                    self.myPlotter.width,
+                    self.myPlotter.height,
                 )
-                myForecast.DrawHourly(
-                    myPlotter.draw,
-                    myPlotter.fonts,
-                    myPlotter.icons,
-                    myPlotter.firstVertical,
-                    myPlotter.firstHorizontal,
-                    myPlotter.width,
-                    myPlotter.thirdHorizontal,
+                self.myForecast.DrawHourly(
+                    self.myPlotter.draw,
+                    self.myPlotter.fonts,
+                    self.myPlotter.icons,
+                    self.myPlotter.firstVertical,
+                    self.myPlotter.firstHorizontal,
+                    self.myPlotter.width,
+                    self.myPlotter.thirdHorizontal,
                 )
-                myWarnings.DrawWarnings(
-                    myPlotter.draw,
-                    myPlotter.fonts,
-                    myPlotter.firstVertical,
-                    myPlotter.thirdHorizontal,
-                    myPlotter.width,
-                    myPlotter.fourthHorizontal,
+                self.myWarnings.DrawWarnings(
+                    self.myPlotter.draw,
+                    self.myPlotter.fonts,
+                    self.myPlotter.firstVertical,
+                    self.myPlotter.thirdHorizontal,
+                    self.myPlotter.width,
+                    self.myPlotter.fourthHorizontal,
                 )
-                mySmog.DrawSmog(
-                    myPlotter.draw,
-                    myPlotter.fonts,
-                    myPlotter.secondVertical - 100,
+                self.mySmog.DrawSmog(
+                    self.myPlotter.draw,
+                    self.myPlotter.fonts,
+                    self.myPlotter.secondVertical - 100,
                     0,
-                    myPlotter.secondVertical,
-                    myPlotter.firstHorizontal,
-                )
-
-                mySensor.DrawSensor(
-                    myPlotter.draw,
-                    myPlotter.fonts,
-                    0,
-                    0,
-                    myPlotter.secondVertical - 100,
-                    myPlotter.firstHorizontal,
+                    self.myPlotter.secondVertical,
+                    self.myPlotter.firstHorizontal,
                 )
 
-                if myPlotter.epdReady == True:
-                    myPlotter.Display()
+                self.mySensor.DrawSensor(
+                    self.myPlotter.draw,
+                    self.myPlotter.fonts,
+                    0,
+                    0,
+                    self.myPlotter.secondVertical - 100,
+                    self.myPlotter.firstHorizontal,
+                )
+
+                if self.myPlotter.epdReady == True:
+                    self.myPlotter.Display()
                 else:
-                    myPlotter.ShowImage()
-                
+                    self.myPlotter.ShowImage()
+            
 
-    except KeyboardInterrupt:
-        myPlotter.EpdSleep()
-        if mySensor.connected:
-            mySensor.Disconnect()
 
 if __name__ == "__main__":
-    asyncio.run(WeatherStation())
+    try:
+        weatherStation = WeatherStation()
+        asyncio.run(weatherStation.RunWeatherStation())
     
+    except KeyboardInterrupt:
+        weatherStation.myPlotter.EpdSleep()
+        if weatherStation.mySensor.connected:
+            weatherStation.mySensor.Disconnect()
