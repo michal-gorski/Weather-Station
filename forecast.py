@@ -35,6 +35,8 @@ class Forecast:
     ):
         try:
             myLogger.Log("Getting forecast")
+            self.forecast = {}
+            self.hourForecast = {}
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
             response = requests.get(url, verify=False)
             soup = BeautifulSoup(response.text, "html.parser")
