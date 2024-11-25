@@ -1,6 +1,9 @@
 import json
 import sys
 import os
+import requests
+import urllib3
+
 from PIL import Image,ImageDraw,ImageFont
 import imageHelper
 import myLogger
@@ -13,11 +16,12 @@ class SchoolPlan:
     tests = ''
 
     def __init__(self) -> None:
-        planPath = os.path.join(os.path.dirname(os.path.realpath(__file__)),'plan.json')
-        myLogger.Log("Getting School Plan")
-        with open(planPath, 'r') as file:
-            self.planData = json.load(file)
-        
+        myLogger.Log("Getting plan data")
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        response = requests.get(
+            "https://michal-gorski.github.io/Weather-Station/plan.json", verify=False
+        )
+        self.planData = response.json()    
         self.tests = self.planData["sprawdziany"]
 
     def CurrentPlan(self):
