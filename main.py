@@ -8,6 +8,7 @@ import datetime
 import sensor
 import asyncio
 import myLogger
+import logging
 
 class WeatherStation:
     
@@ -118,6 +119,11 @@ class WeatherStation:
                     self.myPlotter.ShowImage()
             
 if __name__ == "__main__":
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+    logging.basicConfig(filename='weatherstation.log', level=logging.DEBUG)
+
+
     try:
         weatherStation = WeatherStation()
         asyncio.run(weatherStation.RunWeatherStation())
