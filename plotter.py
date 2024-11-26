@@ -37,7 +37,7 @@ class Plotter:
         self.thirdHorizontal = round(self.height * 0.6)
         self.fourthHorizontal = self.height - round(self.height * 0.2)
 
-        self.firstVertical = round(self.width * 0.3)
+        self.firstVertical = round(self.width * 0.25)
         self.secondVertical = round(self.width - self.width * 0.2)
 
         # load fonts
