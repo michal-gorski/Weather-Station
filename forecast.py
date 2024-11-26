@@ -60,15 +60,20 @@ class Forecast:
                 self.forecast[day][dayPart]["wind"] = div.find_all(
                     attrs={"data-testid": "Wind"}
                 )[0].text.replace("\xa0", " ")
-                self.forecast[day][dayPart]["rain"] = div.find_all(
-                    attrs={"data-testid": "PercentageValue"}
-                )[0].text.replace("\xa0", " ")
+                try:
+                    self.forecast[day][dayPart]["rain"] = div.find_all(
+                        attrs={"data-testid": "PercentageValue"}
+                    )[0].text.replace("\xa0", " ")
+                except:
+                    self.forecast[day][dayPart]["rain"] = '0'
+
                 self.forecast[day][dayPart]["icon"] = div.find_all(
                     attrs={"data-testid": "weatherIcon"}
                 )[0].text
 
             myLogger.Log("Getting hourly forecast")
             url = "https://weather.com/pl-PL/pogoda/godzinowa/l/93409ef628e2eccc8fe84493beb24470c722d12ef4632a9c49250af345ba81ef"
+           
             response = requests.get(url, verify=False)
             soup = BeautifulSoup(response.text, "html.parser")
             mydivs = soup.find_all("div")
@@ -88,9 +93,13 @@ class Forecast:
                 self.hourForecast[hour]["wind"] = div.find_all(
                     attrs={"data-testid": "Wind"}
                 )[0].text.replace("\xa0", " ")
-                self.hourForecast[hour]["rain"] = div.find_all(
-                    attrs={"data-testid": "PercentageValue"}
-                )[0].text.replace("\xa0", " ")
+                try:
+                    self.hourForecast[hour]["rain"] = div.find_all(
+                        attrs={"data-testid": "PercentageValue"}
+                        )[0].text.replace("\xa0", " ")
+                except:
+                    self.hourForecast[hour]["rain"] = '0'
+
                 self.hourForecast[hour]["icon"] = div.find_all(
                     attrs={"data-testid": "Icon"}
                 )[0].text
