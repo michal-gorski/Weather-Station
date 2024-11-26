@@ -110,7 +110,7 @@ class SchoolPlan:
                 imageHelper.DrawDottedHorizontalLine(draw,x1,testPos + 35,x2,4)     
                 draw.text((x1+4, testPos + 6), test['data'], font = fonts["font14light"], fill = 0)
                 draw.text((x1+60, testPos + 4), test["przedmiot"], font = fonts["font14light"], fill = 0)
-                draw.text((x1+15, testPos + 19), test["zakres"], font = fonts["font14light"], fill = 0)
+                draw.text((x1+4, testPos + 19), test["zakres"], font = fonts["font14light"], fill = 0)
                 
                 
                 position += 1
