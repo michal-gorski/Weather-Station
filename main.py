@@ -84,7 +84,7 @@ class WeatherStation:
                     self.myPlotter.icons,
                     self.myPlotter.firstVertical,
                     self.myPlotter.firstHorizontal,
-                    self.myPlotter.width,
+                    self.myPlotter.width - 12,
                     self.myPlotter.thirdHorizontal,
                 )
                 self.myWarnings.DrawWarnings(
