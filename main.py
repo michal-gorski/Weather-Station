@@ -75,7 +75,7 @@ class WeatherStation:
                     self.myPlotter.icons,
                     self.myPlotter.firstVertical,
                     self.myPlotter.fourthHorizontal,
-                    self.myPlotter.width,
+                    self.myPlotter.width-5,
                     self.myPlotter.height,
                 )
                 self.myForecast.DrawHourly(
