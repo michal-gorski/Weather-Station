@@ -204,7 +204,7 @@ class Plotter:
             self.epd.init()
             self.epd.Clear()
             self.epdReady = True
-            myLogger.Log("EPD Init OK")
+            logger.info("EPD Init OK")
             return True
         except Exception as e:
             logger.warning("Screen not found: "+ str(e))
