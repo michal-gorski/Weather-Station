@@ -7,7 +7,6 @@ import forecast
 import datetime
 import sensor
 import asyncio
-import myLogger
 import logging
 
 class WeatherStation:
@@ -50,7 +49,7 @@ class WeatherStation:
                     
 
                 # draw data
-                myLogger.Log("Starting redraw")
+                logger.info("Starting redraw")
                 self.myPlotter.PrepareGrid()
 
                 self.myPlan.DrawPlan(
@@ -120,8 +119,13 @@ class WeatherStation:
             
 if __name__ == "__main__":
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
-    logging.basicConfig(filename='weatherstation.log', level=logging.DEBUG)
+    logger.setLevel(logging.INFO)
+    logging.basicConfig(filename='weatherstation.log', 
+                        level=logging.INFO,
+                        filemode='w',
+                        format="{asctime} - {levelname} - {message}",
+                        style="{",
+                        datefmt="%Y-%m-%d %H:%M")
 
 
     try:

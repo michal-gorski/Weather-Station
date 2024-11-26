@@ -1,6 +1,7 @@
 from PIL import Image, ImageDraw, ImageFont
 import imageHelper
-import myLogger
+import logging
+logger = logging.getLogger(__name__)
 
 import asyncio
 from bleak import BleakScanner, BleakClient
@@ -55,19 +56,19 @@ class Sensor:
         imageHelper.DrawDottedVerticalLine(draw, 285, 0, y2, 4)
 
     async def Connect(self) -> bool:
-        myLogger.Log("Starting Sensor connection")
+        logger.info("Starting Sensor connection")
         try:
             devices = await BleakScanner.discover(timeout=10)
             for d in devices:
-                myLogger.Log("Found device: " + str(d))
+                logger.info("Found device: " + str(d))
                 
                 if d.name != None and d.name.startswith("ATC"):
                     self.device = d
-                    myLogger.Log("Connecting to: " + str(d))
+                    logger.info("Connecting to: " + str(d))
                     client = BleakClient(d, timeout=30)
 
                     await client.connect()
-                    myLogger.Log("Connected to: " + str(d))
+                    logger.info("Connected to: " + str(d))
 
                     #for service in client.services:
                     #    for char in service.characteristics:
@@ -78,14 +79,14 @@ class Sensor:
                     await self.GetData()
                     return True
         except Exception as e:
-            myLogger.Log(str(e))
+            logger.error(str(e))
             self.client = ""
             self.connected = False
             return False
 
     async def GetData(self):
         try:
-            myLogger.Log('getting data from sensor:' + str(self.device))
+            logger.info('getting data from sensor:' + str(self.device))
             temp_bytes = await self.client.read_gatt_char(self.TEMP_ID)
             self.temperature = (
                 int.from_bytes(temp_bytes[:2], byteorder="little", signed=True) / 10
@@ -96,11 +97,12 @@ class Sensor:
                 int.from_bytes(hum_bytes[:2], byteorder="little", signed=True) / 100
             )
 
-            myLogger.Log("temp:" + str(self.temperature) + " hum: " + str(self.humidity))
+            logger.info("temp:" + str(self.temperature) + " hum: " + str(self.humidity))
         except Exception as e:
+            logger.error(str(e))
             self.connected = False
             print(str(e))
 
     async def Disconnect(self):
-        myLogger.Log("Disconnecting from" + str(self.device))
+        logger.info("Disconnecting from" + str(self.device))
         await self.client.disconnect()

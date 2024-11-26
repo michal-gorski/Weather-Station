@@ -6,7 +6,8 @@ import urllib3
 
 from PIL import Image,ImageDraw,ImageFont
 import imageHelper
-import myLogger
+import logging
+logger = logging.getLogger(__name__)
 
 
 class SchoolPlan:
@@ -16,7 +17,7 @@ class SchoolPlan:
     tests = ''
 
     def __init__(self) -> None:
-        myLogger.Log("Getting plan data")
+        logger.info("Getting plan data")
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         response = requests.get(
             "https://michal-gorski.github.io/Weather-Station/plan.json", verify=False
@@ -36,7 +37,7 @@ class SchoolPlan:
             dayOfWeek = 0
         
         self.dayOfWeek = dayOfWeek
-        myLogger.Log("Getting plan for current day: " + str(dayOfWeek))
+        logger.info("Getting plan for current day: " + str(dayOfWeek))
 
         self.currentPlan = self.PlanForDay(dayOfWeek)
         return self.currentPlan
