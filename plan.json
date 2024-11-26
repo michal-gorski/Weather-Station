@@ -7,7 +7,7 @@
     "4":["","Angielski","Matematyka","Dojazd","Basen","Basen","GW","Angielski","Etyka"],
     "sprawdziany":[
         {"przedmiot":"Historia","data":"27.11","zakres":"Polska szlachecka"},
-        {"przedmiot":"Hiszpański","data":"28.11","zakres":"Gustar"},        
+        {"przedmiot":"HiszpańskiTEST","data":"28.11","zakres":"Gustar"},        
         {"przedmiot":"Angielski","data":"29.11","zakres":"Unit 2"},        
         {"przedmiot":"Matematyka","data":"2.12","zakres":"Figury na płaszczyźnie"}        
     ]
