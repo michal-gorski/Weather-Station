@@ -121,7 +121,7 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
     logging.basicConfig(level=logging.INFO,
-                        #filename='weatherstation.log', 
+                        filename='weatherstation.log', 
                         filemode='w',
                         format="{asctime} - {levelname} - {message}",
                         style="{",
