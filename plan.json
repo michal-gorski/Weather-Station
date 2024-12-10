@@ -5,9 +5,7 @@
     "2":["","Plastyka","Matematyka","Historia","Polski","Matematyka"],
     "3":["","Dojazd 08:50","WF","WF","Polski","Hiszpański","Hiszpański"],
     "4":["","Angielski","Matematyka","Dojazd","Basen","Basen","GW","Angielski","Etyka"],
-    "sprawdziany":[
-        
-        {"przedmiot":"Biologia","data":"10.12","zakres":"Stawonogi, Owady, Mięczaki"},        
+    "sprawdziany":[               
         {"przedmiot":"Angielski","data":"16.12","zakres":"Going on Holiday"}      
      ]
 }
