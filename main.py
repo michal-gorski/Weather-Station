@@ -118,18 +118,20 @@ class WeatherStation:
                     self.myPlotter.ShowImage()
             
 if __name__ == "__main__":
-    import logging
-    logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
-    rootLogger = logging.getLogger()
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    logging.basicConfig(level=logging.INFO,
+                        filename='weatherstation.log', 
+                        filemode='w',
+                        handlers=[
+                            logging.FileHandler("weatherstation.log"),
+                            logging.StreamHandler()
+                        ],
+                        format="{asctime} - {levelname} - {message}",
+                        style="{",
+                        datefmt="%Y-%m-%d %H:%M")
 
-    fileHandler = logging.FileHandler("weatherstation.log")
-    fileHandler.setFormatter(logFormatter)
-    rootLogger.addHandler(fileHandler)
 
-    consoleHandler = logging.StreamHandler()
-    consoleHandler.setFormatter(logFormatter)
-    rootLogger.addHandler(consoleHandler)
-    
     try:
         weatherStation = WeatherStation()
         asyncio.run(weatherStation.RunWeatherStation())
