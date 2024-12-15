@@ -120,15 +120,14 @@ class WeatherStation:
 if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
-    logging.basicConfig(level=logging.INFO,
-                        filemode='w',
-                        handlers=[
-                            logging.FileHandler("weatherstation.log"),
-                            logging.StreamHandler()
-                        ],
-                        format="{asctime} - {levelname} - {message}",
-                        style="{",
-                        datefmt="%Y-%m-%d %H:%M")
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        handlers=[
+            logging.FileHandler("weatherstation.log"),
+            logging.StreamHandler()
+        ]
+    )
 
 
     try:
