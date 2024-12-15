@@ -26,7 +26,8 @@ class Forecast:
         "Clear Night": "clear_night",
         "Mostly Sunny": "mostly_sunny",
         "Mostly Clear Night": "mostly_clear_night",
-        "Foggy":'foggy'
+        "Foggy":'foggy',
+        "Wind":"wind"
     }
 
     def __init__(
