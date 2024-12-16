@@ -13,7 +13,7 @@ class WeatherWarnings:
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         response = requests.get('https://danepubliczne.imgw.pl/api/data/warningsmeteo',verify=False)
         parsed = response.json()
-        if hasattr(parsed,'status') and parsed['status'] != False:
+        if not(hasattr(parsed,'status')) or (hasattr(parsed,'status') and parsed['status'] != False):
             filteredEvent = [event for event in parsed if "2261" in event['teryt']]
             
             for event in filteredEvent:            
@@ -35,3 +35,8 @@ class WeatherWarnings:
             for warning in self.weatherWarning:
                 wrappedText = imageHelper.WrappedText('• '+warning,fonts['font14light'],x2-x1-10)
                 draw.text((x1+5,y1+8),wrappedText,0,fonts['font14light'])
+    
+
+if __name__ == "__main__":
+    myWarnings = WeatherWarnings()
+    myWarnings.PrintWarnings()
