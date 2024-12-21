@@ -68,7 +68,7 @@ class SchoolPlan:
         imageHelper.DrawDots(draw,x1,y1,x2,header,6)
         imageHelper.DrawDottedHorizontalLine(draw,x1,header,x2,4)
 
-        draw.text((x1+15, round((y1+header)/2-9)), 'PLAN LEKCJI '+ self.WordDay().upper(), font = fonts["font16bold"], fill = 0)
+        draw.text((x1+15, round((y1+header)/2-9)), 'PLAN '+ self.WordDay().upper(), font = fonts["font16bold"], fill = 0)
 
         if self.currentPlan == '': self.CurrentPlan()
         

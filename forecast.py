@@ -16,6 +16,8 @@ class Forecast:
         "Scattered Showers Night": "scattered_showers_night",
         "Scattered Showers": "scattered_showers",
         "Partly Cloudy": "partly_cloudy",
+        "Partly Cloudy Day": "partly_cloudy",
+        "Mostly Cloudy Day": "mostly_cloudy",
         "Sunny": "sunny",
         "Rain and Snow": "rain_and_snow",
         "Snow": "snow",
@@ -27,7 +29,8 @@ class Forecast:
         "Mostly Sunny": "mostly_sunny",
         "Mostly Clear Night": "mostly_clear_night",
         "Foggy":'foggy',
-        "Wind":"wind"
+        "Wind":"wind",
+        "Showers":"showers"
     }
 
     def __init__(
