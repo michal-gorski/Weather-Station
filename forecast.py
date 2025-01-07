@@ -31,7 +31,8 @@ class Forecast:
         "Foggy":'foggy',
         "Wind":"wind",
         "Showers":"showers",
-        "Rain, Snow, Wintery Mix":"rain_and_snow"
+        "Rain, Snow, Wintery Mix":"rain_and_snow",
+        "Snow Showers":"snow"
     }
 
     def __init__(
