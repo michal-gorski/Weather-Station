@@ -30,7 +30,8 @@ class Forecast:
         "Mostly Clear Night": "mostly_clear_night",
         "Foggy":'foggy',
         "Wind":"wind",
-        "Showers":"showers"
+        "Showers":"showers",
+        "Rain, Snow, Wintery Mix":"rain_and_snow"
     }
 
     def __init__(
