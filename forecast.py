@@ -17,6 +17,7 @@ class Forecast:
         "Scattered Showers": "scattered_showers",
         "Partly Cloudy": "partly_cloudy",
         "Partly Cloudy Day": "partly_cloudy",
+        "Mostly Clear Day": "partly_cloudy",
         "Mostly Cloudy Day": "mostly_cloudy",
         "Sunny": "sunny",
         "Rain and Snow": "rain_and_snow",
