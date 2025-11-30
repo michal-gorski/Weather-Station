@@ -232,7 +232,7 @@ class Forecast:
                 )
 
                 # draw temperature
-                temperature = f"{self.forecast[forecastDay]['temperatureMax']}° / {self.forecast[forecastDay]['temperatureMin']}°"
+                temperature = f"{round(self.forecast[forecastDay]['temperatureMax'])}° / {round(self.forecast[forecastDay]['temperatureMin'])}°"
         
                 tempTextLen = draw.textlength(
                     temperature, font=fonts["font18"], direction=None, features=None
@@ -241,7 +241,7 @@ class Forecast:
                 draw.text((tempTextPos, y1 + 61), temperature, 0, font=fonts["font18"])
 
                 # draw wind
-                wind = f"{self.forecast[forecastDay]['wind']} km/h"
+                wind = f"{round(self.forecast[forecastDay]['wind'])} km/h"
                 
                 windTextLen = draw.textlength(
                     wind, font=fonts["font14light"], direction=None, features=None
