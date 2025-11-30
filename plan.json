@@ -13,64 +13,62 @@
     ],
     "0": [
         "",
-        "Angielski",
-        "Muzyka",
-        "Historia",
-        "Informatyka",
-        "Geografia",
+        "GW",
         "Polski",
+        "Polski",
+        "Fizyka",
+        "Geografia",
+        "Angielski",
         "Angielski",
         "Angielski"
     ],
     "1": [
-        "",
-        "",
-        "Matematyka",
-        "Matematyka",
+        "Dojazd 08:40",
+        "WF",
+        "WF",
         "Polski",
         "Polski",
-        "Biologia",
-        "Technika",
-        "Etyka"
-    ],
-    "2": [
-        "",
-        "Plastyka",
+        "Matematyka",
         "Matematyka",
         "Historia",
+        "Muzyka"
+    ],
+    "2": [
+        "Repetytorium",
         "Polski",
-        "Matematyka"
+        "Biologia",
+        "Matematyka",
+        "Biologia"
     ],
     "3": [
-        "",
-        "Dojazd 08:50",
-        "WF",
-        "WF",
-        "Polski",
+        "Basen 8:30",
+        "Basen",
+        "Historia",
+        "Matematyka",
         "Hiszpański",
-        "Hiszpański"
+        "Hiszpański",
+        "Matematyka",
+        "Angielski"
     ],
     "4": [
-        "",
+        "Informatyka",
+        "Fizyka",
+        "Plastyka",
         "Angielski",
-        "Matematyka",
-        "Dojazd",
-        "Basen",
-        "Basen",
-        "GW",
-        "Angielski",
-        "Etyka"
+        "Geografia",
+        "Chemia",
+        "Chemia"
     ],
     "sprawdziany": [
         {
             "przedmiot": "Polski",
-            "data": "14 Sty",
-            "zakres": "Biblia"
+            "data": "2 Gru",
+            "zakres": "Kochanowski"
         },
         {
             "przedmiot": "Matematyka",
-            "data": "14 Sty",
-            "zakres": "Jednostki"
+            "data": "4 Gru",
+            "zakres": "Procenty"
         }
     ]
 }
