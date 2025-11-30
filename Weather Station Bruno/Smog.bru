@@ -1,0 +1,16 @@
+meta {
+  name: Smog
+  type: http
+  seq: 1
+}
+
+get {
+  url: https://api.gios.gov.pl/pjp-api/v1/rest/aqindex/getIndex/736
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

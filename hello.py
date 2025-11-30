@@ -51,6 +51,7 @@ for div in filteredDivs:
 #f.write(copiedDivs)
 #f.close()
 
+
 for forecastDay in forecast:
     print(forecastDay,': temperatura: ',forecast[forecastDay]['temperature'], ' | wiatr: ',forecast[forecastDay]['wind'], ' | deszcz: ',forecast[forecastDay]['rain'], ' | opis: ',forecast[forecastDay]['icon'])
     print('-------')

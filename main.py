@@ -26,7 +26,6 @@ class WeatherStation:
         
         self.myPlotter.EpdInit()
 
-        
         currentMinute = 0
         while True:
             if datetime.datetime.now().minute != currentMinute:

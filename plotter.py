@@ -91,6 +91,9 @@ class Plotter:
         self.icons["scattered_showers_small"] = Image.open(
             os.path.join(path, "scattered_showers_small.png")
         )
+        self.icons["scattered_showers_night_small"] = Image.open(
+            os.path.join(path, "scattered_showers_night_small.png")
+        )
         self.icons["mostly_cloudy_small"] = Image.open(
             os.path.join(path, "mostly_cloudy_small.png")
         )

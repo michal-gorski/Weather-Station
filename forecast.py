@@ -1,116 +1,160 @@
 import requests
-from bs4 import BeautifulSoup
 import urllib3
 from PIL import Image, ImageDraw, ImageFont
 import imageHelper
 import re
 import logging
+from datetime import datetime
 logger = logging.getLogger(__name__)
 
 class Forecast:
     forecast = {}
     hourForecast = {}
-    icons = {
-        "Mostly Cloudy": "mostly_cloudy",
-        "Partly Cloudy Night": "partly_cloudy_night",
-        "Scattered Showers Night": "scattered_showers_night",
-        "Scattered Showers": "scattered_showers",
-        "Partly Cloudy": "partly_cloudy",
-        "Partly Cloudy Day": "partly_cloudy",
-        "Mostly Clear Day": "partly_cloudy",
-        "Mostly Cloudy Day": "mostly_cloudy",
-        "Sunny": "sunny",
-        "Rain and Snow": "rain_and_snow",
-        "Snow": "snow",
-        "Cloudy": "cloudy",
-        "Rain": "rain",
-        "Mostly Cloudy Night": "mostly_cloudy_night",
-        "Scattered Snow Night": "scattered_snow_night",
-        "Clear Night": "clear_night",
-        "Mostly Sunny": "mostly_sunny",
-        "Mostly Clear Night": "mostly_clear_night",
-        "Foggy":'foggy',
-        "Wind":"wind",
-        "Showers":"showers",
-        "Rain, Snow, Wintery Mix":"rain_and_snow",
-        "Snow Showers":"snow"
+    icons = {     
+        "Clear Night":"clear_night",
+        "Partly Cloudy Night":"partly_cloudy_night",
+        "Cloudy Night":"mostly_cloudy_night",
+        "Overcast Night":"cloudy",
+        "Mist Night":"foggy",
+        "Patchy rain nearby Night":"scattered_showers_night",
+        "Patchy rain possible Night":"scattered_showers_night",
+        "Patchy snow possible Night":"scattered_snow_night",
+        "Patchy sleet possible Night":"foggy",
+        "Patchy freezing drizzle possible Night":"rain_and_snow",
+        "Thundery outbreaks possible Night":"thunder",
+        "Blowing snow Night":"snow",
+        "Blizzard Night":"snow",
+        "Fog Night":"foggy",
+        "Freezing fog Night":"foggy",
+        "Patchy light drizzle Night":"scattered_showers",
+        "Light drizzle Night":"scattered_showers",
+        "Freezing drizzle Night":"rain_and_snow",
+        "Heavy freezing drizzle Night":"rain_and_snow",
+        "Patchy light rain Night":"scattered_showers",
+        "Light rain Night":"showers",
+        "Moderate rain at times Night":"showers",
+        "Moderate rain Night":"rain",
+        "Heavy rain at times Night":"rain",
+        "Heavy rain Night":"heavy_rain",
+        "Light freezing rain Night":"rain_and_snow",
+        "Moderate or heavy freezing rain Night":"rain_and_snow",
+        "Light sleet Night":"foggy",
+        "Moderate or heavy sleet Night":"foggy",
+        "Patchy light snow Night":"snow",
+        "Light snow Night":"snow",
+        "Patchy moderate snow Night":"snow",
+        "Moderate snow Night":"snow",
+        "Patchy heavy snow Night":"heavy_snow",
+        "Heavy snow Night":"heavy_snow",
+        "Ice pellets Night":"hail",
+        "Light rain shower Night":"scattered_showers",
+        "Moderate or heavy rain shower Night":"showers",
+        "Torrential rain shower Night":"rain",
+        "Light sleet showers Night":"scattered_showers",
+        "Moderate or heavy sleet showers Night":"showers",
+        "Light snow showers Night":"snow",
+        "Moderate or heavy snow showers Night":"heavy_snow",
+        "Light showers of ice pellets Night":"hail",
+        "Moderate or heavy showers of ice pellets Night":"hail",
+        "Patchy light rain with thunde Night":"thunder",
+        "Moderate or heavy rain with thunder Night":"thunder",
+        "Patchy light snow with thunder Night":"thunder",
+        "Moderate or heavy snow with thunder Night":"thunder",
+        "Sunny":"sunny",
+        "Partly Cloudy":"partly_cloudy",
+        "Cloudy":"mostly_cloudy",
+        "Overcast":"cloudy",
+        "Mist":"foggy",
+        "Patchy rain possible":"showers",
+        "Patchy snow possible":"snow",
+        "Patchy sleet possible":"foggy",
+        "Patchy freezing drizzle possible":"rain_and_snow",
+        "Thundery outbreaks possible":"thunder",
+        "Blowing snow":"snow",
+        "Blizzard":"snow",
+        "Fog":"foggy",
+        "Freezing fog":"foggy",
+        "Patchy light drizzle":"scattered_showers",
+        "Light drizzle":"scattered_showers",
+        "Freezing drizzle":"rain_and_snow",
+        "Heavy freezing drizzle":"rain_and_snow",
+        "Patchy light rain":"scattered_showers",
+        "Light rain":"showers",
+        "Moderate rain at times":"showers",
+        "Moderate rain":"rain",
+        "Heavy rain at times":"rain",
+        "Heavy rain":"heavy_rain",
+        "Light freezing rain":"rain_and_snow",
+        "Moderate or heavy freezing rain":"rain_and_snow",
+        "Light sleet":"foggy",
+        "Moderate or heavy sleet":"foggy",
+        "Patchy light snow":"snow",
+        "Light snow":"snow",
+        "Patchy moderate snow":"snow",
+        "Moderate snow":"snow",
+        "Patchy heavy snow":"heavy_snow",
+        "Heavy snow":"heavy_snow",
+        "Ice pellets":"hail",
+        "Light rain shower":"scattered_showers",
+        "Moderate or heavy rain shower":"showers",
+        "Torrential rain shower":"rain",
+        "Light sleet showers":"scattered_showers",
+        "Moderate or heavy sleet showers":"showers",
+        "Light snow showers":"snow",
+        "Moderate or heavy snow showers":"heavy_snow",
+        "Light showers of ice pellets":"hail",
+        "Moderate or heavy showers of ice pellets":"hail",
+        "Patchy light rain with thunder":"thunder",
+        "Moderate or heavy rain with thunder":"thunder",
+        "Patchy light snow with thunder":"thunder",
+        "Moderate or heavy snow with thunder":"thunder"
     }
 
     def __init__(
         self,
-        url="https://weather.com/pl-PL/weather/tenday/l/93409ef628e2eccc8fe84493beb24470c722d12ef4632a9c49250af345ba81ef",
-    ):
+        url="http://api.weatherapi.com/v1/forecast.json?key=6f5d0f74d85f4293a1c155846252811&q=Gdansk&days=7&aqi=no&alerts=no"):
         try:
             logger.info("Getting forecast")
             self.forecast = {}
             self.hourForecast = {}
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
             response = requests.get(url, verify=False)
-            soup = BeautifulSoup(response.text, "html.parser")
-            mydivs = soup.find_all("div")
+            # Extract daily forecast
+            forecast_days = response.json()["forecast"]["forecastday"]
 
-            filteredDivs = []
-            for div in mydivs:
-                testId = div.get("data-testid")
-                if testId == "DailyContent":
-                    filteredDivs.append(div)
+            for day in forecast_days:
+                date = day["date"]
+                self.forecast[date] = dict()
+                self.forecast[date]["temperatureMax"] = day["day"]["maxtemp_c"]
+                self.forecast[date]["temperatureMin"] = day["day"]["mintemp_c"]
 
-            for div in filteredDivs:
-                day = div.h2.text.split("|")[0].strip()
-                dayPart = div.h2.text.split("|")[1].strip()
-                if day not in self.forecast:
-                    self.forecast[day] = dict()
-                self.forecast[day][dayPart] = dict()
-                self.forecast[day][dayPart]["temperature"] = div.find_all(
-                    attrs={"data-testid": "TemperatureValue"}
-                )[0].text
-                self.forecast[day][dayPart]["wind"] = div.find_all(
-                    attrs={"data-testid": "Wind"}
-                )[0].text.replace("\xa0", " ")
-                try:
-                    self.forecast[day][dayPart]["rain"] = div.find_all(
-                        attrs={"data-testid": "PercentageValue"}
-                    )[0].text.replace("\xa0", " ")
-                except:
-                    self.forecast[day][dayPart]["rain"] = '0'
+                self.forecast[date]["wind"] = day["day"]["maxwind_kph"]
+                self.forecast[date]["rain"] = day["day"]["totalprecip_mm"]
+                self.forecast[date]["icon"] = day["day"]["condition"]["text"].strip()
+                
+            #extract hourly forecast
+            forecast_hours = response.json()["forecast"]["forecastday"][0]["hour"]
+            hoursCount = 0
+            for hour in forecast_hours:
+                forecastHour = hour["time"]
+                 
+                # Convert string to datetime object
+                target_time = datetime.strptime(forecastHour, "%Y-%m-%d %H:%M")
 
-                self.forecast[day][dayPart]["icon"] = div.find_all(
-                    attrs={"data-testid": "weatherIcon"}
-                )[0].text
+                # Get current time
+                current_time = datetime.now()
 
-            logger.info("Getting hourly forecast")
-            url = "https://weather.com/pl-PL/pogoda/godzinowa/l/93409ef628e2eccc8fe84493beb24470c722d12ef4632a9c49250af345ba81ef"
-           
-            response = requests.get(url, verify=False)
-            soup = BeautifulSoup(response.text, "html.parser")
-            mydivs = soup.find_all("div")
-
-            filteredDivs = []
-            for div in mydivs:
-                testId = div.get("data-testid")
-                if testId == "DetailsSummary":
-                    filteredDivs.append(div)
-
-            for div in filteredDivs[:23]:
-                hour = div.h2.text
-                self.hourForecast[hour] = dict()
-                self.hourForecast[hour]["temperature"] = div.find_all(
-                    attrs={"data-testid": "TemperatureValue"}
-                )[0].text
-                self.hourForecast[hour]["wind"] = div.find_all(
-                    attrs={"data-testid": "Wind"}
-                )[0].text.replace("\xa0", " ")
-                try:
-                    self.hourForecast[hour]["rain"] = div.find_all(
-                        attrs={"data-testid": "PercentageValue"}
-                        )[0].text.replace("\xa0", " ")
-                except:
-                    self.hourForecast[hour]["rain"] = '0'
-
-                self.hourForecast[hour]["icon"] = div.find_all(
-                    attrs={"data-testid": "Icon"}
-                )[0].text
-
+                # Compare
+                if target_time > current_time and hoursCount < 10:
+                    hoursCount+=1
+                    self.hourForecast[forecastHour] = dict()
+                    self.hourForecast[forecastHour]["temperature"] = hour["temp_c"]
+                    self.hourForecast[forecastHour]["wind"] = hour["wind_kph"]
+                    self.hourForecast[forecastHour]["rain"] = hour["precip_mm"]
+                    self.hourForecast[forecastHour]["icon"] = hour["condition"]["text"]
+                    if (hour["is_day"] == 0):
+                        self.hourForecast[forecastHour]['icon'] = f"{self.hourForecast[forecastHour]['icon']}".strip() + " Night"
+            
         except Exception as e:
             logger.info("Exception loading forecast: " + str(e))
 
@@ -152,7 +196,7 @@ class Forecast:
 
         for forecastDay in self.forecast:
 
-            if skipFirst != True and position <= 6:
+            if position <= 7:
                 leftBorder = x1 + round(position * (x2 - x1) / 7)
                 boxWidth = round((x2 - x1) / 7)
 
@@ -162,15 +206,24 @@ class Forecast:
                 )
 
                 # draw day title
+                forecastTemp = datetime.strptime(forecastDay, "%Y-%m-%d")
+
+                # Polish weekday abbreviations (Mon=0 ... Sun=6)
+                polish_weekdays = ["Pon", "Wt", "Śr", "Czw", "Pt", "Sob", "Nie"]
+
+                # Construct the string
+                dayText = f"{polish_weekdays[forecastTemp.weekday()]}. {forecastTemp.day}"
+
                 dayTextLen = draw.textlength(
-                    forecastDay, font=fonts["font14"], direction=None, features=None
+                    dayText, font=fonts["font14"], direction=None, features=None
                 )
                 dayTextPos = round(leftBorder + boxWidth / 2 - dayTextLen / 2)
-                draw.text((dayTextPos, y1 + 5), forecastDay, 0, font=fonts["font14"])
+                draw.text((dayTextPos, y1 + 5), dayText, 0, font=fonts["font14"])
 
+                forecastName = self.forecast[forecastDay]["icon"]
                 # draw weather icon
-                iconName = (
-                    self.icons[self.forecast[forecastDay]["Dzień"]["icon"]] + "_small"
+                iconName = (                    
+                    self.icons[forecastName]+ "_small"
                 )
                 iconWidth = icons[iconName].width
                 draw._image.paste(
@@ -179,11 +232,8 @@ class Forecast:
                 )
 
                 # draw temperature
-                temperature = (
-                    self.forecast[forecastDay]["Dzień"]["temperature"]
-                    + " / "
-                    + self.forecast[forecastDay]["Noc"]["temperature"]
-                )
+                temperature = f"{self.forecast[forecastDay]['temperatureMax']}° / {self.forecast[forecastDay]['temperatureMin']}°"
+        
                 tempTextLen = draw.textlength(
                     temperature, font=fonts["font18"], direction=None, features=None
                 )
@@ -191,10 +241,8 @@ class Forecast:
                 draw.text((tempTextPos, y1 + 61), temperature, 0, font=fonts["font18"])
 
                 # draw wind
-                wind = (
-                    re.findall(r"\d+", self.forecast[forecastDay]["Dzień"]["wind"])[0]
-                    + " km/h"
-                )
+                wind = f"{self.forecast[forecastDay]['wind']} km/h"
+                
                 windTextLen = draw.textlength(
                     wind, font=fonts["font14light"], direction=None, features=None
                 )
@@ -203,9 +251,8 @@ class Forecast:
 
                 position += 1
 
-            elif skipFirst == True:
-                skipFirst = False
-
+            
+            
     def DrawHourly(
         self,
         draw: ImageDraw.ImageDraw,
@@ -231,16 +278,22 @@ class Forecast:
                     draw, leftBorder + boxWidth, y1, y2, 4
                 )
 
+                # Convert string to datetime object
+                date_obj = datetime.strptime(forecastHour, "%Y-%m-%d %H:%M")
+
+                # Extract only the time
+                hourText = f"{date_obj.time()}"[0:5]
+
                 # draw hour title
                 dayTextLen = draw.textlength(
-                    forecastHour, font=fonts["font14"], direction=None, features=None
+                    hourText, font=fonts["font14"], direction=None, features=None
                 )
                 dayTextPos = round(leftBorder + boxWidth / 2 - dayTextLen / 2)
-                draw.text((dayTextPos, y1 + 5), forecastHour, 0, font=fonts["font14"])
+                draw.text((dayTextPos, y1 + 5), hourText, 0, font=fonts["font14"])
 
                 # draw weather icon
                 iconName = (
-                    self.icons[self.hourForecast[forecastHour]["icon"]] + "_small"
+                    self.icons[self.hourForecast[forecastHour]["icon"].strip()] + "_small"
                 )
                 iconWidth = icons[iconName].width
                 draw._image.paste(
@@ -248,7 +301,7 @@ class Forecast:
                 )
 
                 # draw temperature
-                temperature = self.hourForecast[forecastHour]["temperature"]
+                temperature = f"{round(self.hourForecast[forecastHour]["temperature"])}°"
                 tempTextLen = draw.textlength(
                     temperature, font=fonts["font18"], direction=None, features=None
                 )
@@ -256,10 +309,8 @@ class Forecast:
                 draw.text((tempTextPos+2, y1 + 63), temperature, 0, font=fonts["font18"])
 
                 # draw wind
-                wind = (
-                    re.findall(r"\d+", self.hourForecast[forecastHour]["wind"])[0]
-                    + " km/h"
-                )
+                wind = f"{round(self.hourForecast[forecastHour]['wind'])} km/h"
+                
                 windTextLen = draw.textlength(
                     wind, font=fonts["font14light"], direction=None, features=None
                 )
@@ -268,8 +319,7 @@ class Forecast:
 
                 # draw wind icon
                 if (
-                    int(re.findall(r"\d+", self.hourForecast[forecastHour]["wind"])[0])
-                    > 15
+                    int(self.hourForecast[forecastHour]["wind"]) > 15
                 ):
                     iconName = "wind_small"
                     iconWidth = icons[iconName].width
@@ -279,18 +329,15 @@ class Forecast:
                     )
 
                 # draw rain
-                rain = self.hourForecast[forecastHour]["rain"]
+                rain = f"{self.hourForecast[forecastHour]['rain']}mm"
                 tempTextLen = draw.textlength(
                     rain, font=fonts["font18"], direction=None, features=None
                 )
                 tempTextPos = round(leftBorder + boxWidth / 2 - tempTextLen / 2)
-                draw.text((tempTextPos + 1, y1 + 136), rain, 0, font=fonts["font14"])
+                draw.text((tempTextPos + 3, y1 + 138), rain, 0, font=fonts["font14"])
 
                 # draw rain icon
-                if (
-                    int(re.findall(r"\d+", self.hourForecast[forecastHour]["rain"])[0])
-                    > 25
-                ):
+                if (int(self.hourForecast[forecastHour]["rain"]) > 25):
                     iconName = "rain_percent_small"
                     iconWidth = icons[iconName].width
                     draw._image.paste(

@@ -14,11 +14,11 @@ class Smog:
         logger.info("Getting data on smog")
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         response = requests.get(
-            "https://api.gios.gov.pl/pjp-api/rest/aqindex/getIndex/736", verify=False
+            "https://api.gios.gov.pl/pjp-api/v1/rest/aqindex/getIndex/736", verify=False
         )
         parsed = response.json()
-        self.Smog10 = parsed["pm10IndexLevel"]["indexLevelName"]
-        self.Smog25 = parsed["pm25IndexLevel"]["indexLevelName"]
+        self.Smog10 = parsed["AqIndex"]["Nazwa kategorii indeksu dla wskażnika PM10"]
+        self.Smog25 = parsed["AqIndex"]["Nazwa kategorii indeksu dla wskażnika PM2.5"]
 
         logger.info("Smog collected: " + self.Smog10 + " | " + self.Smog25)
 
