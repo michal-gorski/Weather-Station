@@ -1,0 +1,21 @@
+meta {
+  name: Open-Meteo
+  type: http
+  seq: 4
+}
+
+get {
+  url: https://api.open-meteo.com/v1/forecast?latitude=52.23&longitude=21.01&hourly=temperature_2m,precipitation
+  body: none
+  auth: inherit
+}
+
+params:query {
+  latitude: 52.23
+  longitude: 21.01
+  hourly: temperature_2m,precipitation
+}
+
+settings {
+  encodeUrl: true
+}

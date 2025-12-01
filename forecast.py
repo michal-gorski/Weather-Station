@@ -4,13 +4,71 @@ from PIL import Image, ImageDraw, ImageFont
 import imageHelper
 import re
 import logging
+from datetime import timezone,timedelta
 from datetime import datetime
 logger = logging.getLogger(__name__)
 
 class Forecast:
     forecast = {}
     hourForecast = {}
-    icons = {     
+    icons = {   
+        "Sunny":"sunny",
+        "Mostly sunny":"mostly_sunny",
+        "Partly sunny":"partly_cloudy",
+        "Intermittent clouds":"partly_cloudy",
+        "Hazy sunshine":"mostly_sunny",
+        "Mostly cloudy":"mostly_cloudy",
+        "Cloudy":"cloudy",
+        "Dreary":"cloudy",
+        "Fog":"fog",
+        "Showers":"scattered_showers",
+        "Mostly cloudy w/ showers":"scattered_showers",
+        "Partly sunny w/ showers":"scattered_showers",
+        "T-storms":"thunder",
+        "Mostly cloudy w/ T-storms":"thunder",
+        "Partly sunny w/ T-storms":"thunder",
+        "Rain":"rain",
+        "Flurries":"rain_and_snow",
+        "Mostly cloudy w/ flurries":"rain_and_snow",
+        "Partly sunny w/ flurries":"rain_and_snow",
+        "Snow":"snow",
+        "Mostly cloudy w/ snow":"snow",
+        "Ice":"snow",
+        "Sleet":"hail",
+        "Freezing rain":"rain_and_snow",
+        "Rain and snow":"rain_and_snow",
+        "Hot":"",
+        "Cold":"",
+        "Windy":"wind",
+        "Cloudy Night":"cloudy",
+        "Dreary (overcast) Night":"cloudy",
+        "Fog Night":"fog",
+        "Showers Night":"scattered_showers_night",
+        "T-storms Night":"thunder",
+        "Rain Night":"rain",
+        "Flurries Night":"rain_and_snow",
+        "Snow Night":"snow",
+        "Ice Night":"snow",
+        "Sleet Night":"snow",
+        "Freezing rain Night":"rain_and_snow",
+        "Rain and snow Night":"rain_and_snow",
+        "Hot Night":"",
+        "Cold Night":"",
+        "Windy Night":"wind",
+        "Clear Night":"clear_night",
+        "Mostly clear Night":"mostly_clear_night",
+        "Partly cloudy Night":"partly_cloudy_night",
+        "Intermittent clouds Night":"partly_cloudy_night",
+        "Hazy moonlight Night":"partly_cloudy_night",
+        "Mostly cloudy Night":"mostly_cloudy_night",
+        "Partly cloudy w/ showers Night":"scattered_showers_night",
+        "Mostly cloudy w/ showers Night":"scattered_showers_night",
+        "Partly cloudy w/ T-storms Night":"scattered_showers_night",
+        "Mostly cloudy w/ T-storms Night":"scattered_showers_night",
+        "Mostly cloudy w/ flurries Night":"scattered_showers_night",
+        "Mostly cloudy w/ snow Night":"snow",
+
+        "Patchy rain nearby":"scattered_showers",
         "Clear Night":"clear_night",
         "Partly Cloudy Night":"partly_cloudy_night",
         "Cloudy Night":"mostly_cloudy_night",
@@ -110,10 +168,64 @@ class Forecast:
         "Moderate or heavy snow with thunder":"thunder"
     }
 
-    def __init__(
-        self,
-        url="http://api.weatherapi.com/v1/forecast.json?key=6f5d0f74d85f4293a1c155846252811&q=Gdansk&days=7&aqi=no&alerts=no"):
+    def __init__(self):
+        #self.GetForecastWeatherAPI()
+        self.GetForecastAccuweather()
+
+
+    def GetForecastAccuweather(self):
+        url="https://dataservice.accuweather.com/forecasts/v1/daily/5day/275174?language=en-gb&metric=true&details=true"
+        headers = {
+            "Authorization": "Bearer zpka_81b0c0d384804bd4b0b4eb60eccc745c_94c586c2"
+        }
+        logger.info("Getting forecast")
+        self.forecast = {}
+        self.hourForecast = {}
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        response = requests.get(url, verify=False,headers=headers)
+        forecastJson = response.json()["DailyForecasts"]
+        for day in forecastJson:
+            date=day["Date"]
+            self.forecast[date] = dict()
+            self.forecast[date]["temperatureMax"] = day["Temperature"]["Maximum"]["Value"]
+            self.forecast[date]["temperatureMin"] = day["Temperature"]["Minimum"]["Value"]
+            self.forecast[date]["wind"] = f"{round(day["Day"]["Wind"]["Speed"]["Value"])}{day["Day"]["Wind"]["Direction"]["Localized"]}"
+            self.forecast[date]["rain"] = round(day["Day"]["Rain"]["Value"])
+            self.forecast[date]["icon"] = day["Day"]["IconPhrase"].strip()
+
+        url = "https://dataservice.accuweather.com/forecasts/v1/hourly/12hour/275174?language=en-gb&metric=true&details=true"
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        response = requests.get(url, verify=False,headers=headers)
+        forecastJson = response.json()
+
+        hoursCount = 0
+        for hour in forecastJson:
+            forecastHour = hour["DateTime"]
+                
+            # Convert string to datetime object
+            target_time = datetime.fromisoformat(forecastHour)
+
+            # Get current time
+            cet = timezone(timedelta(hours=1))
+            current_time = datetime.now(cet)
+
+            # Compare
+            if target_time > current_time and hoursCount < 10:
+                hoursCount+=1
+                self.hourForecast[forecastHour] = dict()
+                self.hourForecast[forecastHour]["temperature"] = hour["Temperature"]["Value"]
+                self.hourForecast[forecastHour]["wind"] = round(hour["Wind"]["Speed"]["Value"])
+                self.hourForecast[forecastHour]["rain"] = round(hour["TotalLiquid"]["Value"])
+                self.hourForecast[forecastHour]["icon"] = hour["IconPhrase"]
+                if (hour["IsDaylight"] == False):
+                    self.hourForecast[forecastHour]['icon'] = f"{self.hourForecast[forecastHour]['icon']}".strip() + " Night"
+            
+
+
+
+    def GetForecastWeatherAPI(self): 
         try:
+            url="http://api.weatherapi.com/v1/forecast.json?key=6f5d0f74d85f4293a1c155846252811&q=Gdansk&days=7&aqi=no&alerts=no"
             logger.info("Getting forecast")
             self.forecast = {}
             self.hourForecast = {}
@@ -133,7 +245,13 @@ class Forecast:
                 self.forecast[date]["icon"] = day["day"]["condition"]["text"].strip()
                 
             #extract hourly forecast
-            forecast_hours = response.json()["forecast"]["forecastday"][0]["hour"]
+
+            forecast_day0 = response.json()["forecast"]["forecastday"][0]["hour"]
+            forecast_day1 = response.json()["forecast"]["forecastday"][1]["hour"]
+
+            # Join them together
+            forecast_hours = forecast_day0 + forecast_day1
+
             hoursCount = 0
             for hour in forecast_hours:
                 forecastHour = hour["time"]
@@ -206,7 +324,7 @@ class Forecast:
                 )
 
                 # draw day title
-                forecastTemp = datetime.strptime(forecastDay, "%Y-%m-%d")
+                forecastTemp = datetime.strptime(forecastDay[0:10], "%Y-%m-%d")
 
                 # Polish weekday abbreviations (Mon=0 ... Sun=6)
                 polish_weekdays = ["Pon", "Wt", "Śr", "Czw", "Pt", "Sob", "Nie"]
@@ -241,7 +359,7 @@ class Forecast:
                 draw.text((tempTextPos, y1 + 61), temperature, 0, font=fonts["font18"])
 
                 # draw wind
-                wind = f"{round(self.forecast[forecastDay]['wind'])} km/h"
+                wind = f"{self.forecast[forecastDay]['wind']} km/h"
                 
                 windTextLen = draw.textlength(
                     wind, font=fonts["font14light"], direction=None, features=None
@@ -279,7 +397,7 @@ class Forecast:
                 )
 
                 # Convert string to datetime object
-                date_obj = datetime.strptime(forecastHour, "%Y-%m-%d %H:%M")
+                date_obj = datetime.fromisoformat(forecastHour)
 
                 # Extract only the time
                 hourText = f"{date_obj.time()}"[0:5]
