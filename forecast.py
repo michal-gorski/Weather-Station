@@ -13,6 +13,7 @@ class Forecast:
     hourForecast = {}
     icons = {   
         "Sunny":"sunny",
+        "Patchy rain nearby":"scattered_showers",
         "Mostly sunny":"mostly_sunny",
         "Partly sunny":"partly_cloudy",
         "Intermittent clouds":"partly_cloudy",
@@ -176,7 +177,7 @@ class Forecast:
     def GetForecastAccuweather(self):
         url="https://dataservice.accuweather.com/forecasts/v1/daily/5day/275174?language=en-gb&metric=true&details=true"
         headers = {
-            "Authorization": "Bearer zpka_81b0c0d384804bd4b0b4eb60eccc745c_94c586c2"
+            "Authorization": "Bearer zpka_e54c31ed8dba403087b11c76a50ef85d_c3e9c692"
         }
         logger.info("Getting forecast")
         self.forecast = {}
