@@ -61,14 +61,19 @@
     ],
     "sprawdziany": [
         {
-            "przedmiot": "Polski",
-            "data": "2 Gru",
-            "zakres": "Kochanowski"
+            "przedmiot": "Hiszpański",
+            "data": "11 Gru",
+            "zakres": "Unidad 3"
         },
         {
-            "przedmiot": "Matematyka",
-            "data": "4 Gru",
-            "zakres": "Procenty"
+            "przedmiot": "Angielski",
+            "data": "15 Gru",
+            "zakres": "Irregular Verbs"
+        },
+        {
+            "przedmiot": "Biologia",
+            "data": "17 Gru",
+            "zakres": "Układ krążenia"
         }
     ]
 }
