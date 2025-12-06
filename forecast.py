@@ -4,169 +4,191 @@ from PIL import Image, ImageDraw, ImageFont
 import imageHelper
 import re
 import logging
-from datetime import timezone,timedelta
-from datetime import datetime
+import os
+from datetime import timezone, timedelta, datetime
+
 logger = logging.getLogger(__name__)
 
 class Forecast:
+    # Configuration constants
+    ACCUWEATHER_API_URL = "https://dataservice.accuweather.com/forecasts/v1"
+    ACCUWEATHER_LOCATION_ID = "275174"  # Gdansk
+    ACCUWEATHER_TIMEZONE_OFFSET = 1  # CET
+    HOURLY_FORECAST_LIMIT = 10
+    MAX_DAILY_FORECASTS = 7
+    WIND_SPEED_THRESHOLD = 15  # km/h
+    RAIN_PERCENTAGE_THRESHOLD = 25
+    
     forecast = {}
     hourForecast = {}
-    icons = {   
-        "Sunny":"sunny",
-        "Patchy rain nearby":"scattered_showers",
-        "Mostly sunny":"mostly_sunny",
-        "Partly sunny":"partly_cloudy",
-        "Intermittent clouds":"partly_cloudy",
-        "Hazy sunshine":"mostly_sunny",
-        "Mostly cloudy":"mostly_cloudy",
-        "Cloudy":"cloudy",
-        "Dreary":"cloudy",
-        "Fog":"fog",
-        "Showers":"scattered_showers",
-        "Mostly cloudy w/ showers":"scattered_showers",
-        "Partly sunny w/ showers":"scattered_showers",
-        "T-storms":"thunder",
-        "Mostly cloudy w/ T-storms":"thunder",
-        "Partly sunny w/ T-storms":"thunder",
-        "Rain":"rain",
-        "Flurries":"rain_and_snow",
-        "Mostly cloudy w/ flurries":"rain_and_snow",
-        "Partly sunny w/ flurries":"rain_and_snow",
-        "Snow":"snow",
-        "Mostly cloudy w/ snow":"snow",
-        "Ice":"snow",
-        "Sleet":"hail",
-        "Freezing rain":"rain_and_snow",
-        "Rain and snow":"rain_and_snow",
-        "Hot":"",
-        "Cold":"",
-        "Windy":"wind",
-        "Cloudy Night":"cloudy",
-        "Dreary (overcast) Night":"cloudy",
-        "Fog Night":"fog",
-        "Showers Night":"scattered_showers_night",
-        "T-storms Night":"thunder",
-        "Rain Night":"rain",
-        "Flurries Night":"rain_and_snow",
-        "Snow Night":"snow",
-        "Ice Night":"snow",
-        "Sleet Night":"snow",
-        "Freezing rain Night":"rain_and_snow",
-        "Rain and snow Night":"rain_and_snow",
-        "Hot Night":"",
-        "Cold Night":"",
-        "Windy Night":"wind",
-        "Clear Night":"clear_night",
-        "Mostly clear Night":"mostly_clear_night",
-        "Partly cloudy Night":"partly_cloudy_night",
-        "Intermittent clouds Night":"partly_cloudy_night",
-        "Hazy moonlight Night":"partly_cloudy_night",
-        "Mostly cloudy Night":"mostly_cloudy_night",
-        "Partly cloudy w/ showers Night":"scattered_showers_night",
-        "Mostly cloudy w/ showers Night":"scattered_showers_night",
-        "Partly cloudy w/ T-storms Night":"scattered_showers_night",
-        "Mostly cloudy w/ T-storms Night":"scattered_showers_night",
-        "Mostly cloudy w/ flurries Night":"scattered_showers_night",
-        "Mostly cloudy w/ snow Night":"snow",
-
-        "Patchy rain nearby":"scattered_showers",
-        "Clear Night":"clear_night",
-        "Partly Cloudy Night":"partly_cloudy_night",
-        "Cloudy Night":"mostly_cloudy_night",
-        "Overcast Night":"cloudy",
-        "Mist Night":"foggy",
-        "Patchy rain nearby Night":"scattered_showers_night",
-        "Patchy rain possible Night":"scattered_showers_night",
-        "Patchy snow possible Night":"scattered_snow_night",
-        "Patchy sleet possible Night":"foggy",
-        "Patchy freezing drizzle possible Night":"rain_and_snow",
-        "Thundery outbreaks possible Night":"thunder",
-        "Blowing snow Night":"snow",
-        "Blizzard Night":"snow",
-        "Fog Night":"foggy",
-        "Freezing fog Night":"foggy",
-        "Patchy light drizzle Night":"scattered_showers",
-        "Light drizzle Night":"scattered_showers",
-        "Freezing drizzle Night":"rain_and_snow",
-        "Heavy freezing drizzle Night":"rain_and_snow",
-        "Patchy light rain Night":"scattered_showers",
-        "Light rain Night":"showers",
-        "Moderate rain at times Night":"showers",
-        "Moderate rain Night":"rain",
-        "Heavy rain at times Night":"rain",
-        "Heavy rain Night":"heavy_rain",
-        "Light freezing rain Night":"rain_and_snow",
-        "Moderate or heavy freezing rain Night":"rain_and_snow",
-        "Light sleet Night":"foggy",
-        "Moderate or heavy sleet Night":"foggy",
-        "Patchy light snow Night":"snow",
-        "Light snow Night":"snow",
-        "Patchy moderate snow Night":"snow",
-        "Moderate snow Night":"snow",
-        "Patchy heavy snow Night":"heavy_snow",
-        "Heavy snow Night":"heavy_snow",
-        "Ice pellets Night":"hail",
-        "Light rain shower Night":"scattered_showers",
-        "Moderate or heavy rain shower Night":"showers",
-        "Torrential rain shower Night":"rain",
-        "Light sleet showers Night":"scattered_showers",
-        "Moderate or heavy sleet showers Night":"showers",
-        "Light snow showers Night":"snow",
-        "Moderate or heavy snow showers Night":"heavy_snow",
-        "Light showers of ice pellets Night":"hail",
-        "Moderate or heavy showers of ice pellets Night":"hail",
-        "Patchy light rain with thunde Night":"thunder",
-        "Moderate or heavy rain with thunder Night":"thunder",
-        "Patchy light snow with thunder Night":"thunder",
-        "Moderate or heavy snow with thunder Night":"thunder",
-        "Sunny":"sunny",
-        "Partly Cloudy":"partly_cloudy",
-        "Cloudy":"mostly_cloudy",
-        "Overcast":"cloudy",
-        "Mist":"foggy",
-        "Patchy rain possible":"showers",
-        "Patchy snow possible":"snow",
-        "Patchy sleet possible":"foggy",
-        "Patchy freezing drizzle possible":"rain_and_snow",
-        "Thundery outbreaks possible":"thunder",
-        "Blowing snow":"snow",
-        "Blizzard":"snow",
-        "Fog":"foggy",
-        "Freezing fog":"foggy",
-        "Patchy light drizzle":"scattered_showers",
-        "Light drizzle":"scattered_showers",
-        "Freezing drizzle":"rain_and_snow",
-        "Heavy freezing drizzle":"rain_and_snow",
-        "Patchy light rain":"scattered_showers",
-        "Light rain":"showers",
-        "Moderate rain at times":"showers",
-        "Moderate rain":"rain",
-        "Heavy rain at times":"rain",
-        "Heavy rain":"heavy_rain",
-        "Light freezing rain":"rain_and_snow",
-        "Moderate or heavy freezing rain":"rain_and_snow",
-        "Light sleet":"foggy",
-        "Moderate or heavy sleet":"foggy",
-        "Patchy light snow":"snow",
-        "Light snow":"snow",
-        "Patchy moderate snow":"snow",
-        "Moderate snow":"snow",
-        "Patchy heavy snow":"heavy_snow",
-        "Heavy snow":"heavy_snow",
-        "Ice pellets":"hail",
-        "Light rain shower":"scattered_showers",
-        "Moderate or heavy rain shower":"showers",
-        "Torrential rain shower":"rain",
-        "Light sleet showers":"scattered_showers",
-        "Moderate or heavy sleet showers":"showers",
-        "Light snow showers":"snow",
-        "Moderate or heavy snow showers":"heavy_snow",
-        "Light showers of ice pellets":"hail",
-        "Moderate or heavy showers of ice pellets":"hail",
-        "Patchy light rain with thunder":"thunder",
-        "Moderate or heavy rain with thunder":"thunder",
-        "Patchy light snow with thunder":"thunder",
-        "Moderate or heavy snow with thunder":"thunder"
+    icons = {
+        # Day conditions
+        "Sunny": "sunny",
+        "Mostly sunny": "mostly_sunny",
+        "Partly Cloudy": "partly_cloudy",
+        "Partly sunny": "partly_cloudy",
+        "Intermittent clouds": "partly_cloudy",
+        "Hazy sunshine": "mostly_sunny",
+        "Mostly cloudy": "mostly_cloudy",
+        "Cloudy": "mostly_cloudy",
+        "Overcast": "cloudy",
+        "Dreary": "cloudy",
+        "Dreary (overcast) Night": "cloudy",
+        "Mist": "foggy",
+        "Fog": "foggy",
+        "Freezing fog": "foggy",
+        
+        # Rain conditions
+        "Patchy rain nearby": "scattered_showers",
+        "Patchy rain possible": "showers",
+        "Patchy light drizzle": "scattered_showers",
+        "Light drizzle": "scattered_showers",
+        "Freezing drizzle": "rain_and_snow",
+        "Heavy freezing drizzle": "rain_and_snow",
+        "Patchy light rain": "scattered_showers",
+        "Light rain": "showers",
+        "Moderate rain at times": "showers",
+        "Moderate rain": "rain",
+        "Heavy rain at times": "rain",
+        "Heavy rain": "heavy_rain",
+        "Light freezing rain": "rain_and_snow",
+        "Moderate or heavy freezing rain": "rain_and_snow",
+        "Showers": "scattered_showers",
+        "Mostly cloudy w/ showers": "scattered_showers",
+        "Partly sunny w/ showers": "scattered_showers",
+        "Rain": "rain",
+        "Light rain shower": "scattered_showers",
+        "Moderate or heavy rain shower": "showers",
+        "Torrential rain shower": "rain",
+        
+        # Snow/Sleet conditions
+        "Patchy snow possible": "snow",
+        "Patchy sleet possible": "foggy",
+        "Patchy light snow": "snow",
+        "Light snow": "snow",
+        "Patchy moderate snow": "snow",
+        "Moderate snow": "snow",
+        "Patchy heavy snow": "heavy_snow",
+        "Heavy snow": "heavy_snow",
+        "Flurries": "rain_and_snow",
+        "Mostly cloudy w/ flurries": "rain_and_snow",
+        "Partly sunny w/ flurries": "rain_and_snow",
+        "Snow": "snow",
+        "Mostly cloudy w/ snow": "snow",
+        "Ice": "snow",
+        "Sleet": "hail",
+        "Light sleet": "foggy",
+        "Moderate or heavy sleet": "foggy",
+        "Light sleet showers": "scattered_showers",
+        "Moderate or heavy sleet showers": "showers",
+        "Light snow showers": "snow",
+        "Moderate or heavy snow showers": "heavy_snow",
+        "Ice pellets": "hail",
+        "Light showers of ice pellets": "hail",
+        "Moderate or heavy showers of ice pellets": "hail",
+        "Blowing snow": "snow",
+        "Blizzard": "snow",
+        "Rain and snow": "rain_and_snow",
+        
+        # Freezing drizzle
+        "Patchy freezing drizzle possible": "rain_and_snow",
+        
+        # Thunder conditions
+        "T-storms": "thunder",
+        "Mostly cloudy w/ T-storms": "thunder",
+        "Partly sunny w/ T-storms": "thunder",
+        "Thundery outbreaks possible": "thunder",
+        "Patchy light rain with thunder": "thunder",
+        "Moderate or heavy rain with thunder": "thunder",
+        "Patchy light snow with thunder": "thunder",
+        "Moderate or heavy snow with thunder": "thunder",
+        
+        # Wind/Temperature conditions
+        "Windy": "wind",
+        "Hot": "",
+        "Cold": "",
+        
+        # Night conditions
+        "Clear Night": "clear_night",
+        "Mostly clear Night": "mostly_clear_night",
+        "Partly cloudy Night": "partly_cloudy_night",
+        "Partly Cloudy Night": "partly_cloudy_night",
+        "Intermittent clouds Night": "partly_cloudy_night",
+        "Hazy moonlight Night": "partly_cloudy_night",
+        "Mostly cloudy Night": "mostly_cloudy_night",
+        "Cloudy Night": "mostly_cloudy_night",
+        "Overcast Night": "cloudy",
+        "Mist Night": "foggy",
+        "Fog Night": "foggy",
+        "Freezing fog Night": "foggy",
+        
+        # Rain conditions (Night)
+        "Patchy rain nearby Night": "scattered_showers_night",
+        "Patchy rain possible Night": "scattered_showers_night",
+        "Patchy light drizzle Night": "scattered_showers",
+        "Light drizzle Night": "scattered_showers",
+        "Freezing drizzle Night": "rain_and_snow",
+        "Heavy freezing drizzle Night": "rain_and_snow",
+        "Patchy light rain Night": "scattered_showers",
+        "Light rain Night": "showers",
+        "Moderate rain at times Night": "showers",
+        "Moderate rain Night": "rain",
+        "Heavy rain at times Night": "rain",
+        "Heavy rain Night": "heavy_rain",
+        "Light freezing rain Night": "rain_and_snow",
+        "Moderate or heavy freezing rain Night": "rain_and_snow",
+        "Showers Night": "scattered_showers_night",
+        "Partly cloudy w/ showers Night": "scattered_showers_night",
+        "Mostly cloudy w/ showers Night": "scattered_showers_night",
+        "Rain Night": "rain",
+        "Light rain shower Night": "scattered_showers",
+        "Moderate or heavy rain shower Night": "showers",
+        "Torrential rain shower Night": "rain",
+        
+        # Snow/Sleet conditions (Night)
+        "Patchy snow possible Night": "scattered_snow_night",
+        "Patchy sleet possible Night": "foggy",
+        "Patchy light snow Night": "snow",
+        "Light snow Night": "snow",
+        "Patchy moderate snow Night": "snow",
+        "Moderate snow Night": "snow",
+        "Patchy heavy snow Night": "heavy_snow",
+        "Heavy snow Night": "heavy_snow",
+        "Flurries Night": "rain_and_snow",
+        "Mostly cloudy w/ flurries Night": "scattered_showers_night",
+        "Snow Night": "snow",
+        "Ice Night": "snow",
+        "Sleet Night": "snow",
+        "Light sleet Night": "foggy",
+        "Moderate or heavy sleet Night": "foggy",
+        "Light sleet showers Night": "scattered_showers",
+        "Moderate or heavy sleet showers Night": "showers",
+        "Light snow showers Night": "snow",
+        "Moderate or heavy snow showers Night": "heavy_snow",
+        "Ice pellets Night": "hail",
+        "Light showers of ice pellets Night": "hail",
+        "Moderate or heavy showers of ice pellets Night": "hail",
+        "Blowing snow Night": "snow",
+        "Blizzard Night": "snow",
+        "Rain and snow Night": "rain_and_snow",
+        
+        # Freezing drizzle (Night)
+        "Patchy freezing drizzle possible Night": "rain_and_snow",
+        
+        # Thunder conditions (Night)
+        "T-storms Night": "thunder",
+        "Partly cloudy w/ T-storms Night": "scattered_showers_night",
+        "Mostly cloudy w/ T-storms Night": "scattered_showers_night",
+        "Thundery outbreaks possible Night": "thunder",
+        "Patchy light rain with thunde Night": "thunder",
+        "Moderate or heavy rain with thunder Night": "thunder",
+        "Patchy light snow with thunder Night": "thunder",
+        "Moderate or heavy snow with thunder Night": "thunder",
+        
+        # Wind/Temperature conditions (Night)
+        "Windy Night": "wind",
+        "Hot Night": "",
+        "Cold Night": "",
     }
 
     def __init__(self):
@@ -175,63 +197,72 @@ class Forecast:
 
 
     def GetForecastAccuweather(self):
-        url="https://dataservice.accuweather.com/forecasts/v1/daily/5day/275174?language=en-gb&metric=true&details=true"
-        headers = {
-            "Authorization": "Bearer zpka_e54c31ed8dba403087b11c76a50ef85d_c3e9c692"
-        }
-        logger.info("Getting forecast")
-        self.forecast = {}
-        self.hourForecast = {}
-        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-        response = requests.get(url, verify=False,headers=headers)
-        forecastJson = response.json()["DailyForecasts"]
-        for day in forecastJson:
-            date=day["Date"]
-            self.forecast[date] = dict()
-            self.forecast[date]["temperatureMax"] = day["Temperature"]["Maximum"]["Value"]
-            self.forecast[date]["temperatureMin"] = day["Temperature"]["Minimum"]["Value"]
-            self.forecast[date]["wind"] = f"{round(day["Day"]["Wind"]["Speed"]["Value"])}{day["Day"]["Wind"]["Direction"]["Localized"]}"
-            self.forecast[date]["rain"] = round(day["Day"]["Rain"]["Value"])
-            self.forecast[date]["icon"] = day["Day"]["IconPhrase"].strip()
-
-        url = "https://dataservice.accuweather.com/forecasts/v1/hourly/12hour/275174?language=en-gb&metric=true&details=true"
-        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-        response = requests.get(url, verify=False,headers=headers)
-        forecastJson = response.json()
-
-        hoursCount = 0
-        for hour in forecastJson:
-            forecastHour = hour["DateTime"]
-                
-            # Convert string to datetime object
-            target_time = datetime.fromisoformat(forecastHour)
-
-            # Get current time
-            cet = timezone(timedelta(hours=1))
-            current_time = datetime.now(cet)
-
-            # Compare
-            if target_time > current_time and hoursCount < 10:
-                hoursCount+=1
-                self.hourForecast[forecastHour] = dict()
-                self.hourForecast[forecastHour]["temperature"] = hour["Temperature"]["Value"]
-                self.hourForecast[forecastHour]["wind"] = round(hour["Wind"]["Speed"]["Value"])
-                self.hourForecast[forecastHour]["rain"] = round(hour["TotalLiquid"]["Value"])
-                self.hourForecast[forecastHour]["icon"] = hour["IconPhrase"]
-                if (hour["IsDaylight"] == False):
-                    self.hourForecast[forecastHour]['icon'] = f"{self.hourForecast[forecastHour]['icon']}".strip() + " Night"
-            
-
-
-
-    def GetForecastWeatherAPI(self): 
         try:
-            url="http://api.weatherapi.com/v1/forecast.json?key=6f5d0f74d85f4293a1c155846252811&q=Gdansk&days=7&aqi=no&alerts=no"
+            api_key = "zpka_e54c31ed8dba403087b11c76a50ef85d_c3e9c692"
+            
+            url = f"{self.ACCUWEATHER_API_URL}/daily/5day/{self.ACCUWEATHER_LOCATION_ID}?language=en-gb&metric=true&details=true"
+            headers = {"Authorization": f"Bearer {api_key}"}
             logger.info("Getting forecast")
             self.forecast = {}
             self.hourForecast = {}
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-            response = requests.get(url, verify=False)
+            response = requests.get(url, verify=True, headers=headers, timeout=10)
+            forecastJson = response.json()["DailyForecasts"]
+            for day in forecastJson:
+                date = day["Date"]
+                self.forecast[date] = dict()
+                self.forecast[date]["temperatureMax"] = day["Temperature"]["Maximum"]["Value"]
+                self.forecast[date]["temperatureMin"] = day["Temperature"]["Minimum"]["Value"]
+                self.forecast[date]["wind"] = f"{round(day['Day']['Wind']['Speed']['Value'])}{day['Day']['Wind']['Direction']['Localized']}"
+                self.forecast[date]["rain"] = round(day["Day"]["Rain"]["Value"])
+                self.forecast[date]["icon"] = day["Day"]["IconPhrase"].strip()
+
+            url = f"{self.ACCUWEATHER_API_URL}/hourly/12hour/{self.ACCUWEATHER_LOCATION_ID}?language=en-gb&metric=true&details=true"
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+            response = requests.get(url, verify=True, headers=headers, timeout=10)
+            forecastJson = response.json()
+
+            hoursCount = 0
+            for hour in forecastJson:
+                forecastHour = hour["DateTime"]
+
+                # Convert string to datetime object
+                target_time = datetime.fromisoformat(forecastHour)
+
+                # Get current time
+                cet = timezone(timedelta(hours=self.ACCUWEATHER_TIMEZONE_OFFSET))
+                current_time = datetime.now(cet)
+
+                # Compare
+                if target_time > current_time and hoursCount < self.HOURLY_FORECAST_LIMIT:
+                    hoursCount += 1
+                    self.hourForecast[forecastHour] = dict()
+                    self.hourForecast[forecastHour]["temperature"] = hour["Temperature"]["Value"]
+                    self.hourForecast[forecastHour]["wind"] = round(hour["Wind"]["Speed"]["Value"])
+                    self.hourForecast[forecastHour]["rain"] = round(hour["TotalLiquid"]["Value"])
+                    self.hourForecast[forecastHour]["icon"] = hour["IconPhrase"]
+                    if (hour["IsDaylight"] == False):
+                        self.hourForecast[forecastHour]["icon"] = f"{self.hourForecast[forecastHour]['icon']}".strip() + " Night"
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error fetching AccuWeather forecast: {e}")
+        except (KeyError, ValueError) as e:
+            logger.error(f"Error parsing AccuWeather response: {e}")
+        except Exception as e:
+            logger.error(f"Unexpected error in GetForecastAccuweather: {e}")
+
+    def GetForecastWeatherAPI(self): 
+        try:
+            api_key = os.getenv("WEATHERAPI_API_KEY")
+            if not api_key:
+                logger.error("WEATHERAPI_API_KEY environment variable not set")
+                return
+                
+            url = f"http://api.weatherapi.com/v1/forecast.json?key={api_key}&q=Gdansk&days=7&aqi=no&alerts=no"
+            logger.info("Getting forecast")
+            self.forecast = {}
+            self.hourForecast = {}
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+            response = requests.get(url, verify=True, timeout=10)
             # Extract daily forecast
             forecast_days = response.json()["forecast"]["forecastday"]
 
@@ -264,7 +295,7 @@ class Forecast:
                 current_time = datetime.now()
 
                 # Compare
-                if target_time > current_time and hoursCount < 10:
+                if target_time > current_time and hoursCount < self.HOURLY_FORECAST_LIMIT:
                     hoursCount+=1
                     self.hourForecast[forecastHour] = dict()
                     self.hourForecast[forecastHour]["temperature"] = hour["temp_c"]
@@ -308,16 +339,14 @@ class Forecast:
         y2: int,
     ):
         position = 0
-        skipFirst = True
-
+  
         if len(self.forecast) == 0:
             raise Exception("No loaded forecast")
 
         for forecastDay in self.forecast:
-
-            if position <= 7:
-                leftBorder = x1 + round(position * (x2 - x1) / 7)
-                boxWidth = round((x2 - x1) / 7)
+            if position <= self.MAX_DAILY_FORECASTS:
+                leftBorder = x1 + round(position * (x2 - x1) / self.MAX_DAILY_FORECASTS)
+                boxWidth = round((x2 - x1) / self.MAX_DAILY_FORECASTS)
 
                 # draw box line
                 imageHelper.DrawDottedVerticalLine(
@@ -387,10 +416,10 @@ class Forecast:
             raise Exception("No loaded forecast")
 
         for forecastHour in self.hourForecast:
-
-            if position <= 8:
-                leftBorder = x1 + round(position * (x2 - x1) / 9)
-                boxWidth = round((x2 - x1) / 9)
+            if position <= self.HOURLY_FORECAST_LIMIT - 2:
+                hourly_slots = self.HOURLY_FORECAST_LIMIT - 1
+                leftBorder = x1 + round(position * (x2 - x1) / hourly_slots)
+                boxWidth = round((x2 - x1) / hourly_slots)
 
                 # draw box line
                 imageHelper.DrawDottedVerticalLine(
@@ -437,9 +466,7 @@ class Forecast:
                 draw.text((windTextPos, y1 + 88), wind, 0, font=fonts["font14light"])
 
                 # draw wind icon
-                if (
-                    int(self.hourForecast[forecastHour]["wind"]) > 15
-                ):
+                if int(self.hourForecast[forecastHour]["wind"]) > self.WIND_SPEED_THRESHOLD:
                     iconName = "wind_small"
                     iconWidth = icons[iconName].width
                     draw._image.paste(
@@ -456,7 +483,7 @@ class Forecast:
                 draw.text((tempTextPos + 3, y1 + 138), rain, 0, font=fonts["font14"])
 
                 # draw rain icon
-                if (int(self.hourForecast[forecastHour]["rain"]) > 25):
+                if int(self.hourForecast[forecastHour]["rain"]) > self.RAIN_PERCENTAGE_THRESHOLD:
                     iconName = "rain_percent_small"
                     iconWidth = icons[iconName].width
                     draw._image.paste(
