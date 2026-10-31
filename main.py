@@ -190,9 +190,8 @@ if __name__ == "__main__":
     try:
         weatherStation = WeatherStation()
         asyncio.run(weatherStation.RunWeatherStation())
-    
+
     except KeyboardInterrupt:
-        if hasattr(weatherStation, 'plotter') and weatherStation.plotter:
-            weatherStation.plotter.EpdSleep()
-        if hasattr(weatherStation, 'sensor') and weatherStation.sensor and weatherStation.sensor.connected:
-            weatherStation.sensor.Disconnect()
+        # Ctrl-C during the initial BLE scan, before signal handlers are
+        # registered; the display isn't initialised yet so there is nothing to clean up
+        logger.info("Interrupted")

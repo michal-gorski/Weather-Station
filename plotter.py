@@ -76,56 +76,11 @@ class Plotter:
         self.fonts["font10bold"] = ImageFont.truetype(path, 10)
         self.fonts["font8bold"] = ImageFont.truetype(path, 8)
 
-        # load icons
+        # load icons: every Icons/<name>_small.png becomes icons["<name>_small"]
         path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "Icons")
-        self.icons["cloudy_small"] = Image.open(os.path.join(path, "cloudy_small.png"))
-        self.icons["partly_cloudy_small"] = Image.open(
-            os.path.join(path, "partly_cloudy_small.png")
-        )
-        self.icons["partly_cloudy_night_small"] = Image.open(
-            os.path.join(path, "partly_cloudy_night_small.png")
-        )
-        self.icons["rain_and_snow_small"] = Image.open(
-            os.path.join(path, "rain_and_snow_small.png")
-        )
-        self.icons["scattered_showers_small"] = Image.open(
-            os.path.join(path, "scattered_showers_small.png")
-        )
-        self.icons["scattered_showers_night_small"] = Image.open(
-            os.path.join(path, "scattered_showers_night_small.png")
-        )
-        self.icons["mostly_cloudy_small"] = Image.open(
-            os.path.join(path, "mostly_cloudy_small.png")
-        )
-        self.icons["mostly_cloudy_night_small"] = Image.open(
-            os.path.join(path, "mostly_cloudy_night_small.png")
-        )
-        self.icons["mostly_clear_night_small"] = Image.open(
-            os.path.join(path, "mostly_clear_night_small.png")
-        )
-        self.icons["clear_night_small"] = Image.open(
-            os.path.join(path, "clear_night_small.png")
-        )
-        self.icons["foggy_small"] = Image.open(
-            os.path.join(path, "foggy_small.png")
-        )
-        self.icons["sunny_small"] = Image.open(
-            os.path.join(path, "sunny_small.png")
-        )
-        self.icons["rain_small"] = Image.open(
-            os.path.join(path, "rain_small.png")
-        )
-        self.icons["snow_small"] = Image.open(os.path.join(path, "snow_small.png"))
-        self.icons["mostly_sunny_small"] = Image.open(
-            os.path.join(path, "mostly_sunny_small.png")
-        )
-        self.icons["showers_small"] = Image.open(
-            os.path.join(path, "showers_small.png")
-        )
-        self.icons["wind_small"] = Image.open(os.path.join(path, "wind_small.png"))
-        self.icons["rain_percent_small"] = Image.open(
-            os.path.join(path, "rain_percent_small.png")
-        )
+        for fileName in os.listdir(path):
+            if fileName.endswith("_small.png"):
+                self.icons[fileName[:-4]] = Image.open(os.path.join(path, fileName))
 
     def PrepareGrid(self):
         import imageHelper
@@ -217,6 +172,8 @@ class Plotter:
             return False
 
     def EpdSleep(self):
+        if not self.epdReady:
+            return
         logger.info("Putting EPD to sleep")
         self.epd.init()
         self.epd.Clear()

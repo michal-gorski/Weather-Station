@@ -1,332 +1,142 @@
 import requests
-import urllib3
 from PIL import Image, ImageDraw, ImageFont
 import imageHelper
-import re
 import logging
-import os
-from datetime import timezone, timedelta, datetime
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 logger = logging.getLogger(__name__)
 
 class Forecast:
     # Configuration constants
-    ACCUWEATHER_API_URL = "https://dataservice.accuweather.com/forecasts/v1"
-    ACCUWEATHER_LOCATION_ID = "275174"  # Gdansk
-    ACCUWEATHER_TIMEZONE_OFFSET = 1  # CET
+    OPEN_METEO_API_URL = "https://api.open-meteo.com/v1/forecast"
+    LATITUDE = 54.352  # Gdansk
+    LONGITUDE = 18.6466
+    TIMEZONE = "Europe/Warsaw"
     HOURLY_FORECAST_LIMIT = 10
     MAX_DAILY_FORECASTS = 7
     WIND_SPEED_THRESHOLD = 15  # km/h
     RAIN_PERCENTAGE_THRESHOLD = 25
-    
-    forecast = {}
-    hourForecast = {}
+
+    # WMO weather interpretation codes -> (day icon, night icon)
+    # https://open-meteo.com/en/docs#weather_variable_documentation
     icons = {
-        # Day conditions
-        "Sunny": "sunny",
-        "Mostly sunny": "mostly_sunny",
-        "Partly Cloudy": "partly_cloudy",
-        "Partly sunny": "partly_cloudy",
-        "Intermittent clouds": "partly_cloudy",
-        "Hazy sunshine": "mostly_sunny",
-        "Mostly cloudy": "mostly_cloudy",
-        "Cloudy": "mostly_cloudy",
-        "Overcast": "cloudy",
-        "Dreary": "cloudy",
-        "Dreary (overcast) Night": "cloudy",
-        "Mist": "foggy",
-        "Fog": "foggy",
-        "Freezing fog": "foggy",
-        
-        # Rain conditions
-        "Patchy rain nearby": "scattered_showers",
-        "Patchy rain possible": "showers",
-        "Patchy light drizzle": "scattered_showers",
-        "Light drizzle": "scattered_showers",
-        "Freezing drizzle": "rain_and_snow",
-        "Heavy freezing drizzle": "rain_and_snow",
-        "Patchy light rain": "scattered_showers",
-        "Light rain": "showers",
-        "Moderate rain at times": "showers",
-        "Moderate rain": "rain",
-        "Heavy rain at times": "rain",
-        "Heavy rain": "heavy_rain",
-        "Light freezing rain": "rain_and_snow",
-        "Moderate or heavy freezing rain": "rain_and_snow",
-        "Showers": "scattered_showers",
-        "Mostly cloudy w/ showers": "scattered_showers",
-        "Partly sunny w/ showers": "scattered_showers",
-        "Rain": "rain",
-        "Light rain shower": "scattered_showers",
-        "Moderate or heavy rain shower": "showers",
-        "Torrential rain shower": "rain",
-        
-        # Snow/Sleet conditions
-        "Patchy snow possible": "snow",
-        "Patchy sleet possible": "foggy",
-        "Patchy light snow": "snow",
-        "Light snow": "snow",
-        "Patchy moderate snow": "snow",
-        "Moderate snow": "snow",
-        "Patchy heavy snow": "heavy_snow",
-        "Heavy snow": "heavy_snow",
-        "Flurries": "rain_and_snow",
-        "Mostly cloudy w/ flurries": "rain_and_snow",
-        "Partly sunny w/ flurries": "rain_and_snow",
-        "Snow": "snow",
-        "Mostly cloudy w/ snow": "snow",
-        "Ice": "snow",
-        "Sleet": "hail",
-        "Light sleet": "foggy",
-        "Moderate or heavy sleet": "foggy",
-        "Light sleet showers": "scattered_showers",
-        "Moderate or heavy sleet showers": "showers",
-        "Light snow showers": "snow",
-        "Moderate or heavy snow showers": "heavy_snow",
-        "Ice pellets": "hail",
-        "Light showers of ice pellets": "hail",
-        "Moderate or heavy showers of ice pellets": "hail",
-        "Blowing snow": "snow",
-        "Blizzard": "snow",
-        "Rain and snow": "rain_and_snow",
-        
-        # Freezing drizzle
-        "Patchy freezing drizzle possible": "rain_and_snow",
-        
-        # Thunder conditions
-        "T-storms": "thunder",
-        "Mostly cloudy w/ T-storms": "thunder",
-        "Partly sunny w/ T-storms": "thunder",
-        "Thundery outbreaks possible": "thunder",
-        "Patchy light rain with thunder": "thunder",
-        "Moderate or heavy rain with thunder": "thunder",
-        "Patchy light snow with thunder": "thunder",
-        "Moderate or heavy snow with thunder": "thunder",
-        
-        # Wind/Temperature conditions
-        "Windy": "wind",
-        "Hot": "",
-        "Cold": "",
-        
-        # Night conditions
-        "Clear Night": "clear_night",
-        "Mostly clear Night": "mostly_clear_night",
-        "Partly cloudy Night": "partly_cloudy_night",
-        "Partly Cloudy Night": "partly_cloudy_night",
-        "Intermittent clouds Night": "partly_cloudy_night",
-        "Hazy moonlight Night": "partly_cloudy_night",
-        "Mostly cloudy Night": "mostly_cloudy_night",
-        "Cloudy Night": "mostly_cloudy_night",
-        "Overcast Night": "cloudy",
-        "Mist Night": "foggy",
-        "Fog Night": "foggy",
-        "Freezing fog Night": "foggy",
-        
-        # Rain conditions (Night)
-        "Patchy rain nearby Night": "scattered_showers_night",
-        "Patchy rain possible Night": "scattered_showers_night",
-        "Patchy light drizzle Night": "scattered_showers",
-        "Light drizzle Night": "scattered_showers",
-        "Freezing drizzle Night": "rain_and_snow",
-        "Heavy freezing drizzle Night": "rain_and_snow",
-        "Patchy light rain Night": "scattered_showers",
-        "Light rain Night": "showers",
-        "Moderate rain at times Night": "showers",
-        "Moderate rain Night": "rain",
-        "Heavy rain at times Night": "rain",
-        "Heavy rain Night": "heavy_rain",
-        "Light freezing rain Night": "rain_and_snow",
-        "Moderate or heavy freezing rain Night": "rain_and_snow",
-        "Showers Night": "scattered_showers_night",
-        "Partly cloudy w/ showers Night": "scattered_showers_night",
-        "Mostly cloudy w/ showers Night": "scattered_showers_night",
-        "Rain Night": "rain",
-        "Light rain shower Night": "scattered_showers",
-        "Moderate or heavy rain shower Night": "showers",
-        "Torrential rain shower Night": "rain",
-        
-        # Snow/Sleet conditions (Night)
-        "Patchy snow possible Night": "scattered_snow_night",
-        "Patchy sleet possible Night": "foggy",
-        "Patchy light snow Night": "snow",
-        "Light snow Night": "snow",
-        "Patchy moderate snow Night": "snow",
-        "Moderate snow Night": "snow",
-        "Patchy heavy snow Night": "heavy_snow",
-        "Heavy snow Night": "heavy_snow",
-        "Flurries Night": "rain_and_snow",
-        "Mostly cloudy w/ flurries Night": "scattered_showers_night",
-        "Snow Night": "snow",
-        "Ice Night": "snow",
-        "Sleet Night": "snow",
-        "Light sleet Night": "foggy",
-        "Moderate or heavy sleet Night": "foggy",
-        "Light sleet showers Night": "scattered_showers",
-        "Moderate or heavy sleet showers Night": "showers",
-        "Light snow showers Night": "snow",
-        "Moderate or heavy snow showers Night": "heavy_snow",
-        "Ice pellets Night": "hail",
-        "Light showers of ice pellets Night": "hail",
-        "Moderate or heavy showers of ice pellets Night": "hail",
-        "Blowing snow Night": "snow",
-        "Blizzard Night": "snow",
-        "Rain and snow Night": "rain_and_snow",
-        
-        # Freezing drizzle (Night)
-        "Patchy freezing drizzle possible Night": "rain_and_snow",
-        
-        # Thunder conditions (Night)
-        "T-storms Night": "thunder",
-        "Partly cloudy w/ T-storms Night": "scattered_showers_night",
-        "Mostly cloudy w/ T-storms Night": "scattered_showers_night",
-        "Thundery outbreaks possible Night": "thunder",
-        "Patchy light rain with thunde Night": "thunder",
-        "Moderate or heavy rain with thunder Night": "thunder",
-        "Patchy light snow with thunder Night": "thunder",
-        "Moderate or heavy snow with thunder Night": "thunder",
-        
-        # Wind/Temperature conditions (Night)
-        "Windy Night": "wind",
-        "Hot Night": "",
-        "Cold Night": "",
+        0: ("sunny", "clear_night"),  # Clear sky
+        1: ("mostly_sunny", "mostly_clear_night"),  # Mainly clear
+        2: ("partly_cloudy", "partly_cloudy_night"),  # Partly cloudy
+        3: ("cloudy", "cloudy"),  # Overcast
+        45: ("foggy", "foggy"),  # Fog
+        48: ("foggy", "foggy"),  # Depositing rime fog
+        51: ("scattered_showers", "scattered_showers_night"),  # Light drizzle
+        53: ("scattered_showers", "scattered_showers_night"),  # Moderate drizzle
+        55: ("showers", "showers"),  # Dense drizzle
+        56: ("rain_and_snow", "rain_and_snow"),  # Light freezing drizzle
+        57: ("rain_and_snow", "rain_and_snow"),  # Dense freezing drizzle
+        61: ("showers", "showers"),  # Slight rain
+        63: ("rain", "rain"),  # Moderate rain
+        65: ("heavy_rain", "heavy_rain"),  # Heavy rain
+        66: ("rain_and_snow", "rain_and_snow"),  # Light freezing rain
+        67: ("rain_and_snow", "rain_and_snow"),  # Heavy freezing rain
+        71: ("snow", "snow"),  # Slight snow fall
+        73: ("snow", "snow"),  # Moderate snow fall
+        75: ("heavy_snow", "heavy_snow"),  # Heavy snow fall
+        77: ("snow", "snow"),  # Snow grains
+        80: ("scattered_showers", "scattered_showers_night"),  # Slight rain showers
+        81: ("showers", "showers"),  # Moderate rain showers
+        82: ("heavy_rain", "heavy_rain"),  # Violent rain showers
+        85: ("snow", "snow"),  # Slight snow showers
+        86: ("heavy_snow", "heavy_snow"),  # Heavy snow showers
+        95: ("thunder", "thunder"),  # Thunderstorm
+        96: ("hail", "hail"),  # Thunderstorm with slight hail
+        99: ("hail", "hail"),  # Thunderstorm with heavy hail
     }
+    DEFAULT_ICON = "cloudy"
+
+    WIND_DIRECTIONS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
 
     def __init__(self):
-        #self.GetForecastWeatherAPI()
-        self.GetForecastAccuweather()
+        self.forecast = {}
+        self.hourForecast = {}
+        self.GetForecastOpenMeteo()
 
+    def IconName(self, weatherCode, isDay=True):
+        dayIcon, nightIcon = self.icons.get(int(weatherCode), (self.DEFAULT_ICON, self.DEFAULT_ICON))
+        return dayIcon if isDay else nightIcon
 
-    def GetForecastAccuweather(self):
+    def WindDirection(self, degrees):
+        return self.WIND_DIRECTIONS[round(degrees / 45) % 8]
+
+    def GetForecastOpenMeteo(self):
+        params = {
+            "latitude": self.LATITUDE,
+            "longitude": self.LONGITUDE,
+            "timezone": self.TIMEZONE,
+            "forecast_days": self.MAX_DAILY_FORECASTS,
+            # +1 because the current, already started hour is skipped below
+            "forecast_hours": self.HOURLY_FORECAST_LIMIT + 1,
+            "daily": "weather_code,temperature_2m_max,temperature_2m_min,"
+                     "wind_speed_10m_max,wind_direction_10m_dominant,precipitation_sum",
+            "hourly": "temperature_2m,weather_code,wind_speed_10m,precipitation,"
+                      "precipitation_probability,is_day",
+        }
         try:
-            api_key = "zpka_e54c31ed8dba403087b11c76a50ef85d_c3e9c692"
-            
-            url = f"{self.ACCUWEATHER_API_URL}/daily/5day/{self.ACCUWEATHER_LOCATION_ID}?language=en-gb&metric=true&details=true"
-            headers = {"Authorization": f"Bearer {api_key}"}
             logger.info("Getting forecast")
-            self.forecast = {}
-            self.hourForecast = {}
-            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-            response = requests.get(url, verify=True, headers=headers, timeout=10)
-            forecastJson = response.json()["DailyForecasts"]
-            for day in forecastJson:
-                date = day["Date"]
+            response = requests.get(self.OPEN_METEO_API_URL, params=params, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+
+            daily = data["daily"]
+            for i, date in enumerate(daily["time"]):
                 self.forecast[date] = dict()
-                self.forecast[date]["temperatureMax"] = day["Temperature"]["Maximum"]["Value"]
-                self.forecast[date]["temperatureMin"] = day["Temperature"]["Minimum"]["Value"]
-                self.forecast[date]["wind"] = f"{round(day['Day']['Wind']['Speed']['Value'])}{day['Day']['Wind']['Direction']['Localized']}"
-                self.forecast[date]["rain"] = round(day["Day"]["Rain"]["Value"])
-                self.forecast[date]["icon"] = day["Day"]["IconPhrase"].strip()
+                self.forecast[date]["temperatureMax"] = daily["temperature_2m_max"][i]
+                self.forecast[date]["temperatureMin"] = daily["temperature_2m_min"][i]
+                self.forecast[date]["wind"] = f"{round(daily['wind_speed_10m_max'][i])}{self.WindDirection(daily['wind_direction_10m_dominant'][i])}"
+                self.forecast[date]["rain"] = daily["precipitation_sum"][i]
+                self.forecast[date]["icon"] = self.IconName(daily["weather_code"][i])
 
-            url = f"{self.ACCUWEATHER_API_URL}/hourly/12hour/{self.ACCUWEATHER_LOCATION_ID}?language=en-gb&metric=true&details=true"
-            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-            response = requests.get(url, verify=True, headers=headers, timeout=10)
-            forecastJson = response.json()
+            # Open-Meteo returns naive local times for the requested timezone
+            current_time = datetime.now(ZoneInfo(self.TIMEZONE)).replace(tzinfo=None)
 
-            hoursCount = 0
-            for hour in forecastJson:
-                forecastHour = hour["DateTime"]
+            hourly = data["hourly"]
+            for i, forecastHour in enumerate(hourly["time"]):
+                if datetime.fromisoformat(forecastHour) <= current_time:
+                    continue
+                if len(self.hourForecast) >= self.HOURLY_FORECAST_LIMIT:
+                    break
+                self.hourForecast[forecastHour] = dict()
+                self.hourForecast[forecastHour]["temperature"] = hourly["temperature_2m"][i]
+                self.hourForecast[forecastHour]["wind"] = hourly["wind_speed_10m"][i]
+                self.hourForecast[forecastHour]["rain"] = hourly["precipitation"][i]
+                self.hourForecast[forecastHour]["rainProbability"] = hourly["precipitation_probability"][i] or 0
+                self.hourForecast[forecastHour]["icon"] = self.IconName(hourly["weather_code"][i], hourly["is_day"][i] == 1)
 
-                # Convert string to datetime object
-                target_time = datetime.fromisoformat(forecastHour)
-
-                # Get current time
-                cet = timezone(timedelta(hours=self.ACCUWEATHER_TIMEZONE_OFFSET))
-                current_time = datetime.now(cet)
-
-                # Compare
-                if target_time > current_time and hoursCount < self.HOURLY_FORECAST_LIMIT:
-                    hoursCount += 1
-                    self.hourForecast[forecastHour] = dict()
-                    self.hourForecast[forecastHour]["temperature"] = hour["Temperature"]["Value"]
-                    self.hourForecast[forecastHour]["wind"] = round(hour["Wind"]["Speed"]["Value"])
-                    self.hourForecast[forecastHour]["rain"] = round(hour["TotalLiquid"]["Value"])
-                    self.hourForecast[forecastHour]["icon"] = hour["IconPhrase"]
-                    if (hour["IsDaylight"] == False):
-                        self.hourForecast[forecastHour]["icon"] = f"{self.hourForecast[forecastHour]['icon']}".strip() + " Night"
+            logger.info(f"Forecast collected: {len(self.forecast)} days, {len(self.hourForecast)} hours")
         except requests.exceptions.RequestException as e:
-            logger.error(f"Error fetching AccuWeather forecast: {e}")
-        except (KeyError, ValueError) as e:
-            logger.error(f"Error parsing AccuWeather response: {e}")
-        except Exception as e:
-            logger.error(f"Unexpected error in GetForecastAccuweather: {e}")
-
-    def GetForecastWeatherAPI(self): 
-        try:
-            api_key = os.getenv("WEATHERAPI_API_KEY")
-            if not api_key:
-                logger.error("WEATHERAPI_API_KEY environment variable not set")
-                return
-                
-            url = f"http://api.weatherapi.com/v1/forecast.json?key={api_key}&q=Gdansk&days=7&aqi=no&alerts=no"
-            logger.info("Getting forecast")
-            self.forecast = {}
-            self.hourForecast = {}
-            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-            response = requests.get(url, verify=True, timeout=10)
-            # Extract daily forecast
-            forecast_days = response.json()["forecast"]["forecastday"]
-
-            for day in forecast_days:
-                date = day["date"]
-                self.forecast[date] = dict()
-                self.forecast[date]["temperatureMax"] = day["day"]["maxtemp_c"]
-                self.forecast[date]["temperatureMin"] = day["day"]["mintemp_c"]
-
-                self.forecast[date]["wind"] = day["day"]["maxwind_kph"]
-                self.forecast[date]["rain"] = day["day"]["totalprecip_mm"]
-                self.forecast[date]["icon"] = day["day"]["condition"]["text"].strip()
-                
-            #extract hourly forecast
-
-            forecast_day0 = response.json()["forecast"]["forecastday"][0]["hour"]
-            forecast_day1 = response.json()["forecast"]["forecastday"][1]["hour"]
-
-            # Join them together
-            forecast_hours = forecast_day0 + forecast_day1
-
-            hoursCount = 0
-            for hour in forecast_hours:
-                forecastHour = hour["time"]
-                 
-                # Convert string to datetime object
-                target_time = datetime.strptime(forecastHour, "%Y-%m-%d %H:%M")
-
-                # Get current time
-                current_time = datetime.now()
-
-                # Compare
-                if target_time > current_time and hoursCount < self.HOURLY_FORECAST_LIMIT:
-                    hoursCount+=1
-                    self.hourForecast[forecastHour] = dict()
-                    self.hourForecast[forecastHour]["temperature"] = hour["temp_c"]
-                    self.hourForecast[forecastHour]["wind"] = hour["wind_kph"]
-                    self.hourForecast[forecastHour]["rain"] = hour["precip_mm"]
-                    self.hourForecast[forecastHour]["icon"] = hour["condition"]["text"]
-                    if (hour["is_day"] == 0):
-                        self.hourForecast[forecastHour]['icon'] = f"{self.hourForecast[forecastHour]['icon']}".strip() + " Night"
-            
-        except Exception as e:
-            logger.info("Exception loading forecast: " + str(e))
+            logger.error(f"Error fetching Open-Meteo forecast: {e}")
+        except (KeyError, ValueError, TypeError) as e:
+            logger.error(f"Error parsing Open-Meteo response: {e}")
 
     def PrintForecast(self):
-        for forecastDay in self.forecast:
-            for dayPart in self.forecast[forecastDay]:
-                print(
-                    forecastDay,
-                    " | ",
-                    dayPart,
-                    ": temperatura: ",
-                    self.forecast[forecastDay][dayPart]["temperature"],
-                    " | wiatr: ",
-                    self.forecast[forecastDay][dayPart]["wind"],
-                    " | deszcz: ",
-                    self.forecast[forecastDay][dayPart]["rain"],
-                    " | opis: ",
-                    self.forecast[forecastDay][dayPart]["icon"],
-                    ":",
-                    self.icons[self.forecast[forecastDay][dayPart]["icon"]],
-                )
-                print("-------")
+        for forecastDay, day in self.forecast.items():
+            print(
+                forecastDay,
+                " | temperatura: ", day["temperatureMax"], "/", day["temperatureMin"],
+                " | wiatr: ", day["wind"],
+                " | deszcz: ", day["rain"],
+                " | ikona: ", day["icon"],
+            )
+        print("-------")
+        for forecastHour, hour in self.hourForecast.items():
+            print(
+                forecastHour,
+                " | temperatura: ", hour["temperature"],
+                " | wiatr: ", hour["wind"],
+                " | deszcz: ", hour["rain"], "mm (", hour["rainProbability"], "%)",
+                " | ikona: ", hour["icon"],
+            )
+
+    def DrawNoForecast(self, draw: ImageDraw.ImageDraw, fonts, x1: int, y1: int):
+        draw.text((x1 + 5, y1 + 8), "• Brak prognozy", 0, fonts["font18light"])
 
     def DrawForecast(
         self,
@@ -338,69 +148,52 @@ class Forecast:
         x2: int,
         y2: int,
     ):
-        position = 0
-  
         if len(self.forecast) == 0:
-            raise Exception("No loaded forecast")
+            self.DrawNoForecast(draw, fonts, x1, y1)
+            return
 
-        for forecastDay in self.forecast:
-            if position <= self.MAX_DAILY_FORECASTS:
-                leftBorder = x1 + round(position * (x2 - x1) / self.MAX_DAILY_FORECASTS)
-                boxWidth = round((x2 - x1) / self.MAX_DAILY_FORECASTS)
+        # Polish weekday abbreviations (Mon=0 ... Sun=6)
+        polish_weekdays = ["Pon", "Wt", "Śr", "Czw", "Pt", "Sob", "Nie"]
+        boxWidth = round((x2 - x1) / self.MAX_DAILY_FORECASTS)
 
-                # draw box line
-                imageHelper.DrawDottedVerticalLine(
-                    draw, leftBorder + boxWidth, y1, y2, 4
-                )
+        for position, forecastDay in enumerate(self.forecast):
+            if position >= self.MAX_DAILY_FORECASTS:
+                break
+            day = self.forecast[forecastDay]
+            leftBorder = x1 + round(position * (x2 - x1) / self.MAX_DAILY_FORECASTS)
 
-                # draw day title
-                forecastTemp = datetime.strptime(forecastDay[0:10], "%Y-%m-%d")
+            # draw box line
+            imageHelper.DrawDottedVerticalLine(
+                draw, leftBorder + boxWidth, y1, y2, 4
+            )
 
-                # Polish weekday abbreviations (Mon=0 ... Sun=6)
-                polish_weekdays = ["Pon", "Wt", "Śr", "Czw", "Pt", "Sob", "Nie"]
+            # draw day title
+            forecastDate = datetime.strptime(forecastDay[0:10], "%Y-%m-%d")
+            dayText = f"{polish_weekdays[forecastDate.weekday()]}. {forecastDate.day}"
 
-                # Construct the string
-                dayText = f"{polish_weekdays[forecastTemp.weekday()]}. {forecastTemp.day}"
+            dayTextLen = draw.textlength(dayText, font=fonts["font14"])
+            dayTextPos = round(leftBorder + boxWidth / 2 - dayTextLen / 2)
+            draw.text((dayTextPos, y1 + 5), dayText, 0, font=fonts["font14"])
 
-                dayTextLen = draw.textlength(
-                    dayText, font=fonts["font14"], direction=None, features=None
-                )
-                dayTextPos = round(leftBorder + boxWidth / 2 - dayTextLen / 2)
-                draw.text((dayTextPos, y1 + 5), dayText, 0, font=fonts["font14"])
+            # draw weather icon
+            icon = icons[day["icon"] + "_small"]
+            draw._image.paste(
+                icon,
+                (leftBorder + round((boxWidth - icon.width) / 2), y1 + 23),
+            )
 
-                forecastName = self.forecast[forecastDay]["icon"]
-                # draw weather icon
-                iconName = (                    
-                    self.icons[forecastName]+ "_small"
-                )
-                iconWidth = icons[iconName].width
-                draw._image.paste(
-                    icons[iconName],
-                    (leftBorder + 5 + round((70 - iconWidth) / 2), y1 + 23),
-                )
+            # draw temperature
+            temperature = f"{round(day['temperatureMax'])}° / {round(day['temperatureMin'])}°"
+            tempTextLen = draw.textlength(temperature, font=fonts["font18"])
+            tempTextPos = round(leftBorder + boxWidth / 2 - tempTextLen / 2)
+            draw.text((tempTextPos, y1 + 61), temperature, 0, font=fonts["font18"])
 
-                # draw temperature
-                temperature = f"{round(self.forecast[forecastDay]['temperatureMax'])}° / {round(self.forecast[forecastDay]['temperatureMin'])}°"
-        
-                tempTextLen = draw.textlength(
-                    temperature, font=fonts["font18"], direction=None, features=None
-                )
-                tempTextPos = round(leftBorder + boxWidth / 2 - tempTextLen / 2)
-                draw.text((tempTextPos, y1 + 61), temperature, 0, font=fonts["font18"])
+            # draw wind
+            wind = f"{day['wind']} km/h"
+            windTextLen = draw.textlength(wind, font=fonts["font14light"])
+            windTextPos = round(leftBorder + boxWidth / 2 - windTextLen / 2)
+            draw.text((windTextPos, y1 + 80), wind, 0, font=fonts["font14light"])
 
-                # draw wind
-                wind = f"{self.forecast[forecastDay]['wind']} km/h"
-                
-                windTextLen = draw.textlength(
-                    wind, font=fonts["font14light"], direction=None, features=None
-                )
-                windTextPos = round(leftBorder + boxWidth / 2 - windTextLen / 2)
-                draw.text((windTextPos, y1 + 80), wind, 0, font=fonts["font14light"])
-
-                position += 1
-
-            
-            
     def DrawHourly(
         self,
         draw: ImageDraw.ImageDraw,
@@ -411,84 +204,71 @@ class Forecast:
         x2: int,
         y2: int,
     ):
-        position = 0
-        if len(self.forecast) == 0:
-            raise Exception("No loaded forecast")
+        if len(self.hourForecast) == 0:
+            self.DrawNoForecast(draw, fonts, x1, y1)
+            return
 
-        for forecastHour in self.hourForecast:
-            if position <= self.HOURLY_FORECAST_LIMIT - 2:
-                hourly_slots = self.HOURLY_FORECAST_LIMIT - 1
-                leftBorder = x1 + round(position * (x2 - x1) / hourly_slots)
-                boxWidth = round((x2 - x1) / hourly_slots)
+        hourly_slots = self.HOURLY_FORECAST_LIMIT - 1
+        boxWidth = round((x2 - x1) / hourly_slots)
 
-                # draw box line
-                imageHelper.DrawDottedVerticalLine(
-                    draw, leftBorder + boxWidth, y1, y2, 4
-                )
+        for position, forecastHour in enumerate(self.hourForecast):
+            if position >= hourly_slots:
+                break
+            hour = self.hourForecast[forecastHour]
+            leftBorder = x1 + round(position * (x2 - x1) / hourly_slots)
 
-                # Convert string to datetime object
-                date_obj = datetime.fromisoformat(forecastHour)
+            # draw box line
+            imageHelper.DrawDottedVerticalLine(
+                draw, leftBorder + boxWidth, y1, y2, 4
+            )
 
-                # Extract only the time
-                hourText = f"{date_obj.time()}"[0:5]
+            # draw hour title
+            hourText = datetime.fromisoformat(forecastHour).strftime("%H:%M")
+            hourTextLen = draw.textlength(hourText, font=fonts["font14"])
+            hourTextPos = round(leftBorder + boxWidth / 2 - hourTextLen / 2)
+            draw.text((hourTextPos, y1 + 5), hourText, 0, font=fonts["font14"])
 
-                # draw hour title
-                dayTextLen = draw.textlength(
-                    hourText, font=fonts["font14"], direction=None, features=None
-                )
-                dayTextPos = round(leftBorder + boxWidth / 2 - dayTextLen / 2)
-                draw.text((dayTextPos, y1 + 5), hourText, 0, font=fonts["font14"])
+            # draw weather icon
+            icon = icons[hour["icon"] + "_small"]
+            draw._image.paste(
+                icon, (leftBorder + round((boxWidth - icon.width) / 2), y1 + 25)
+            )
 
-                # draw weather icon
-                iconName = (
-                    self.icons[self.hourForecast[forecastHour]["icon"].strip()] + "_small"
-                )
-                iconWidth = icons[iconName].width
+            # draw temperature
+            temperature = f"{round(hour['temperature'])}°"
+            tempTextLen = draw.textlength(temperature, font=fonts["font18"])
+            tempTextPos = round(leftBorder + boxWidth / 2 - tempTextLen / 2)
+            draw.text((tempTextPos + 2, y1 + 63), temperature, 0, font=fonts["font18"])
+
+            # draw wind
+            wind = f"{round(hour['wind'])} km/h"
+            windTextLen = draw.textlength(wind, font=fonts["font14light"])
+            windTextPos = round(leftBorder + boxWidth / 2 - windTextLen / 2)
+            draw.text((windTextPos, y1 + 88), wind, 0, font=fonts["font14light"])
+
+            # draw wind icon
+            if hour["wind"] > self.WIND_SPEED_THRESHOLD:
+                icon = icons["wind_small"]
                 draw._image.paste(
-                    icons[iconName], (leftBorder + round((70 - iconWidth) / 2), y1 + 25)
+                    icon,
+                    (leftBorder + round((boxWidth - icon.width) / 2), y1 + 106),
                 )
 
-                # draw temperature
-                temperature = f"{round(self.hourForecast[forecastHour]["temperature"])}°"
-                tempTextLen = draw.textlength(
-                    temperature, font=fonts["font18"], direction=None, features=None
+            # draw rain
+            rain = f"{hour['rain']:.1f}mm"
+            rainTextLen = draw.textlength(rain, font=fonts["font14"])
+            rainTextPos = round(leftBorder + boxWidth / 2 - rainTextLen / 2)
+            draw.text((rainTextPos, y1 + 138), rain, 0, font=fonts["font14"])
+
+            # draw rain icon when rain is likely
+            if hour["rainProbability"] > self.RAIN_PERCENTAGE_THRESHOLD:
+                icon = icons["rain_percent_small"]
+                draw._image.paste(
+                    icon,
+                    (leftBorder + round((boxWidth - icon.width) / 2), y1 + 157),
                 )
-                tempTextPos = round(leftBorder + boxWidth / 2 - tempTextLen / 2)
-                draw.text((tempTextPos+2, y1 + 63), temperature, 0, font=fonts["font18"])
 
-                # draw wind
-                wind = f"{round(self.hourForecast[forecastHour]['wind'])} km/h"
-                
-                windTextLen = draw.textlength(
-                    wind, font=fonts["font14light"], direction=None, features=None
-                )
-                windTextPos = round(leftBorder + boxWidth / 2 - windTextLen / 2)
-                draw.text((windTextPos, y1 + 88), wind, 0, font=fonts["font14light"])
 
-                # draw wind icon
-                if int(self.hourForecast[forecastHour]["wind"]) > self.WIND_SPEED_THRESHOLD:
-                    iconName = "wind_small"
-                    iconWidth = icons[iconName].width
-                    draw._image.paste(
-                        icons[iconName],
-                        (leftBorder + round((70 - iconWidth) / 2), y1 + 106),
-                    )
-
-                # draw rain
-                rain = f"{self.hourForecast[forecastHour]['rain']}mm"
-                tempTextLen = draw.textlength(
-                    rain, font=fonts["font18"], direction=None, features=None
-                )
-                tempTextPos = round(leftBorder + boxWidth / 2 - tempTextLen / 2)
-                draw.text((tempTextPos + 3, y1 + 138), rain, 0, font=fonts["font14"])
-
-                # draw rain icon
-                if int(self.hourForecast[forecastHour]["rain"]) > self.RAIN_PERCENTAGE_THRESHOLD:
-                    iconName = "rain_percent_small"
-                    iconWidth = icons[iconName].width
-                    draw._image.paste(
-                        icons[iconName],
-                        (leftBorder + round((70 - iconWidth) / 2 - 6), y1 + 157),
-                    )
-
-                position += 1
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    Forecast().PrintForecast()

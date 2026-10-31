@@ -104,5 +104,7 @@ class Sensor:
             print(str(e))
 
     async def Disconnect(self):
-        logger.info("Disconnecting from" + str(self.device))
+        if not self.client:
+            return
+        logger.info("Disconnecting from " + str(self.device))
         await self.client.disconnect()

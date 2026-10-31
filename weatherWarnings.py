@@ -6,21 +6,27 @@ import imageHelper
 import logging
 logger = logging.getLogger(__name__)
 
-class WeatherWarnings: 
-    weatherWarning = []
+class WeatherWarnings:
     def __init__(self) -> None:
         logger.info("Getting weather warnings")
+        self.weatherWarning = []
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-        response = requests.get('https://danepubliczne.imgw.pl/api/data/warningsmeteo',verify=False)
-        parsed = response.json()
-        if not("status" in parsed) or (("status" in parsed) and parsed['status'] != False):
-            filteredEvent = [event for event in parsed if "2261" in event['teryt']]
-            
-            for event in filteredEvent:            
-                self.weatherWarning.append(event['tresc'])   
+        try:
+            response = requests.get('https://danepubliczne.imgw.pl/api/data/warningsmeteo',verify=False,timeout=10)
+            parsed = response.json()
+        except (requests.exceptions.RequestException, ValueError) as e:
+            logger.error("Error fetching weather warnings: " + str(e))
+            return
+
+        # With no active warnings IMGW returns a dict like {"message": "Brak ostrzeżeń..."} instead of a list
+        if isinstance(parsed, list):
+            filteredEvent = [event for event in parsed if "2261" in event.get('teryt', [])]
+
+            for event in filteredEvent:
+                self.weatherWarning.append(event['tresc'])
         logger.info("Received " + str(len(self.weatherWarning)) + " warnings.")
 
-    def PrintWarnings(self):   
+    def PrintWarnings(self):
         for warning in self.weatherWarning:
             print(warning)
             print('//////////')
@@ -35,7 +41,7 @@ class WeatherWarnings:
             for warning in self.weatherWarning:
                 wrappedText = imageHelper.WrappedText('• '+warning,fonts['font14light'],x2-x1-10)
                 draw.text((x1+5,y1+8),wrappedText,0,fonts['font14light'])
-    
+
 
 if __name__ == "__main__":
     myWarnings = WeatherWarnings()
