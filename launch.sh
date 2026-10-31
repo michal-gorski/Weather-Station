@@ -1,4 +1,4 @@
 #!/bin/bash
+cd "$(dirname "$0")"
 git pull
-python3 hello.py
-
+python3 main.py

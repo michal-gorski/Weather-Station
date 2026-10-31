@@ -1,8 +1,4 @@
-import json
-import sys
-import os
 import requests
-import urllib3
 
 from PIL import Image,ImageDraw,ImageFont
 import imageHelper
@@ -11,19 +7,21 @@ logger = logging.getLogger(__name__)
 
 
 class SchoolPlan:
-    planData = ''
-    dayOfWeek = 0
-    currentPlan = ''
-    tests = ''
-
     def __init__(self) -> None:
         logger.info("Getting plan data")
-        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-        response = requests.get(
-            "https://michal-gorski.github.io/Weather-Station/plan.json", verify=False
-        )
-        self.planData = response.json()    
-        self.tests = self.planData["sprawdziany"]
+        self.planData = {}
+        self.dayOfWeek = 0
+        self.currentPlan = []
+        self.tests = []
+        try:
+            response = requests.get(
+                "https://michal-gorski.github.io/Weather-Station/plan.json", timeout=10
+            )
+            response.raise_for_status()
+            self.planData = response.json()
+            self.tests = self.planData.get("sprawdziany", [])
+        except (requests.exceptions.RequestException, ValueError) as e:
+            logger.error("Error fetching plan data: " + str(e))
 
     def CurrentPlan(self):
         import datetime        
@@ -44,9 +42,8 @@ class SchoolPlan:
 
     def PlanForDay(self,day):
         if (day < 0 or day > 4):
-            return self.planData['0']
-        else:
-            return self.planData[str(day)]
+            day = 0
+        return self.planData.get(str(day), [])
 
     def PrintPlan(self):    
         print(self.WordDay(),': ',self.currentPlan)
@@ -70,13 +67,12 @@ class SchoolPlan:
 
         draw.text((x1+15, round((y1+header)/2-9)), 'PLAN '+ self.WordDay().upper(), font = fonts["font16bold"], fill = 0)
 
-        if self.currentPlan == '': self.CurrentPlan()
-        
+        lessonHours = self.planData.get("lekcje", [])
         position = 0
-        lessonNumber = 0
-        for lekcja in self.currentPlan:   
-            planHour = self.planData["lekcje"][lessonNumber]    
-            lessonNumber += 1    
+        # with no lessons the SPRAWDZIANY header goes right under the PLAN header
+        lessonPos = header - 15
+        for lessonNumber, lekcja in enumerate(self.currentPlan):   
+            planHour = lessonHours[lessonNumber] if lessonNumber < len(lessonHours) else ''
             if lekcja != '':
                 lessonPos = header + 8 + position * 30
                 

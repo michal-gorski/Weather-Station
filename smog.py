@@ -1,24 +1,27 @@
 import requests
-import urllib3
-import json
 from PIL import Image, ImageDraw, ImageFont
 import imageHelper
 import logging
 logger = logging.getLogger(__name__)
 
 class Smog:
-    Smog25 = ""
-    Smog10 = ""
+    NO_DATA = "Brak danych"
 
     def __init__(self) -> None:
         logger.info("Getting data on smog")
-        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-        response = requests.get(
-            "https://api.gios.gov.pl/pjp-api/v1/rest/aqindex/getIndex/736", verify=False
-        )
-        parsed = response.json()
-        self.Smog10 = parsed["AqIndex"]["Nazwa kategorii indeksu dla wskażnika PM10"]
-        self.Smog25 = parsed["AqIndex"]["Nazwa kategorii indeksu dla wskażnika PM2.5"]
+        self.Smog10 = self.NO_DATA
+        self.Smog25 = self.NO_DATA
+        try:
+            response = requests.get(
+                "https://api.gios.gov.pl/pjp-api/v1/rest/aqindex/getIndex/736", timeout=10
+            )
+            response.raise_for_status()
+            index = response.json()["AqIndex"]
+            # "wskażnik" is misspelled in the GIOŚ API itself; values are null when there is no index
+            self.Smog10 = index.get("Nazwa kategorii indeksu dla wskażnika PM10") or self.NO_DATA
+            self.Smog25 = index.get("Nazwa kategorii indeksu dla wskażnika PM2.5") or self.NO_DATA
+        except (requests.exceptions.RequestException, KeyError, ValueError) as e:
+            logger.error("Error fetching smog data: " + str(e))
 
         logger.info("Smog collected: " + self.Smog10 + " | " + self.Smog25)
 

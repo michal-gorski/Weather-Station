@@ -1,4 +1,8 @@
 from PIL import Image,ImageDraw,ImageFont
+
+# Fill colour for the red layer of the black/white/red e-paper display
+RED = (255, 0, 0)
+
 def DrawDottedHorizontalLine(draw:ImageDraw.ImageDraw,x1:int,y:int,x2:int,step:int):
     for x in range(x1,x2,step):
         draw.line((x, y, round(x+step/2), y), fill = 0)

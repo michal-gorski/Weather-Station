@@ -1,6 +1,6 @@
 import sys
 import os
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageFont
 import logging
 logger = logging.getLogger(__name__)
 
@@ -10,6 +10,11 @@ if os.path.exists(libdir):
 
 
 class Plotter:
+    # True for the black/white/red 7.5" e-Paper (B) V2 panel (driver epd7in5b_V2),
+    # False for the black/white 7.5" V2 panel (driver epd7in5_V2), where red shows as grey.
+    # Run epd_red_test.py on the Pi to find out which panel is connected.
+    RED_DISPLAY = True
+
     screen = ""
     draw = ""
     epd = ""
@@ -27,7 +32,7 @@ class Plotter:
 
     def __init__(self, width, height) -> None:
         logger.info("Preparing plotter")
-        self.screen = Image.new("L", (width, height), 255)  # 255: clear the frame
+        self.screen = Image.new("RGB", (width, height), "white")  # RGB so modules can draw in imageHelper.RED
         self.draw = ImageDraw.Draw(self.screen)
 
         self.width = self.screen.width
@@ -85,7 +90,7 @@ class Plotter:
     def PrepareGrid(self):
         import imageHelper
         logger.info("Drawing grid")
-        self.screen = Image.new("L", (800, 480), 255)  # 255: clear the frame
+        self.screen = Image.new("RGB", (self.width, self.height), "white")
         self.draw = ImageDraw.Draw(self.screen)
 
         # horizontal line 1
@@ -155,12 +160,17 @@ class Plotter:
             self.draw, self.secondVertical + 2, 0, self.firstHorizontal, 4
         )
 
+    def EpdDriver(self):
+        if self.RED_DISPLAY:
+            from waveshare_epd import epd7in5b_V2
+            return epd7in5b_V2
+        from waveshare_epd import epd7in5_V2
+        return epd7in5_V2
+
     def EpdInit(self):
         logger.info("Starting EPD init")
         try:
-            from waveshare_epd import epd7in5_V2
-
-            self.epd = epd7in5_V2.EPD()
+            self.epd = self.EpdDriver().EPD()
             self.epd.init()
             self.epd.Clear()
             self.epdReady = True
@@ -178,13 +188,25 @@ class Plotter:
         self.epd.init()
         self.epd.Clear()
         self.epd.sleep()
-        from waveshare_epd import epd7in5_V2
+        self.EpdDriver().epdconfig.module_exit(cleanup=True)
 
-        epd7in5_V2.epdconfig.module_exit(cleanup=True)
+    def SplitColors(self):
+        """Split the RGB frame into black and red layers, both drawn black-on-white
+        as the epd7in5b_V2 driver's getbuffer expects."""
+        r, g, b = self.screen.split()
+        # red-ish pixels (including anti-aliased red text edges) have much more red than green
+        isRed = ImageChops.subtract(r, g).point(lambda v: 255 if v > 100 else 0)
+        black = ImageChops.lighter(self.screen.convert("L"), isRed)  # red pixels -> white
+        red = ImageChops.invert(isRed)  # red pixels -> black
+        return black, red
 
     def Display(self):
         logger.info("Displaying forecast")
-        self.epd.display(self.epd.getbuffer(self.screen))
+        if self.RED_DISPLAY:
+            black, red = self.SplitColors()
+            self.epd.display(self.epd.getbuffer(black), self.epd.getbuffer(red))
+        else:
+            self.epd.display(self.epd.getbuffer(self.screen.convert("L")))
 
     def ShowImage(self):
         self.screen.show()

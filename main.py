@@ -9,18 +9,25 @@ import sensor
 import asyncio
 import signal
 import logging
+import logging.handlers
+import os
+import time
 
 logger = logging.getLogger(__name__)
 
 class WeatherStation:
-    
+
+    # How often online data is fetched and a lost sensor reconnected
+    DATA_REFRESH_SECONDS = 10 * 60
+
     forecast = None
-    
+
     def __init__(self) -> None:
         # Event used to trigger graceful shutdown from signal handlers
         self._shutdown = asyncio.Event()
+        self._lastRefresh = None
 
-    async def RunWeatherStation(self):        
+    async def RunWeatherStation(self):
         self.sensor = sensor.Sensor()
 
         await self.sensor.Connect()
@@ -39,7 +46,7 @@ class WeatherStation:
 
         try:
             # Run an initial update immediately
-            await self._update_and_draw()
+            await self._safe_update_and_draw()
 
             # Loop, sleeping until the start of the next minute to avoid busy-waiting
             while not self._shutdown.is_set():
@@ -57,23 +64,39 @@ class WeatherStation:
                 if self._shutdown.is_set():
                     break
 
-                await self._update_and_draw()
+                await self._safe_update_and_draw()
         finally:
             await self._cleanup()
 
+    async def _safe_update_and_draw(self):
+        """Run one cycle; a failure is logged and retried next minute instead of stopping the station."""
+        try:
+            await self._update_and_draw()
+        except Exception:
+            logger.exception("Update cycle failed")
+
+    async def _refresh_data(self):
+        """Fetch online data and reconnect the sensor if it was lost."""
+        newForecast = forecast.Forecast()
+        # keep showing the previous forecast if this fetch failed
+        if self.forecast is None or newForecast.forecast:
+            self.forecast = newForecast
+        self.smog = smog.Smog()
+        self.warnings = weatherWarnings.WeatherWarnings()
+        self.plan = schoolPlan.SchoolPlan()
+
+        if not self.sensor.connected:
+            await self.sensor.Connect()
+
+        self._lastRefresh = time.monotonic()
+
     async def _update_and_draw(self):
         """Perform a single data fetch + draw cycle."""
-        # Determine current minute
-        current_minute = datetime.datetime.now().minute
+        if self._lastRefresh is None or time.monotonic() - self._lastRefresh >= self.DATA_REFRESH_SECONDS:
+            await self._refresh_data()
 
-        # Get data every 10 minutes or on first run
-        if self.forecast is None or current_minute % 10 == 0:
-            self.forecast = forecast.Forecast()
-            self.smog = smog.Smog()
-            self.warnings = weatherWarnings.WeatherWarnings()
-            self.plan = schoolPlan.SchoolPlan()
-            self.plan.CurrentPlan()
-
+        # the plan switches to the next day in the afternoon, so pick the day every cycle
+        self.plan.CurrentPlan()
         self.clock = clock.Clock()
 
         # sensor data
@@ -173,14 +196,16 @@ class WeatherStation:
                     logger.exception("Error disconnecting sensor")
         except Exception:
             logger.exception("Unexpected error during cleanup")
-            
+
 if __name__ == "__main__":
     # configure logging first, then set module logger level
+    logPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "weatherstation.log")
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s [%(levelname)s] %(message)s",
         handlers=[
-            logging.FileHandler("weatherstation.log"),
+            # the station logs every minute, so cap the file at 3 x 1 MB
+            logging.handlers.RotatingFileHandler(logPath, maxBytes=1_000_000, backupCount=2),
             logging.StreamHandler()
         ]
     )

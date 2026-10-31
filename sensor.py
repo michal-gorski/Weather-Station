@@ -13,8 +13,9 @@ class Sensor:
     TEMP_ID = "00002a1f-0000-1000-8000-00805f9b34fb"
     HUMIDITY_ID = "00002a6f-0000-1000-8000-00805f9b34fb"
 
-    temperature = 0
-    humidity = 0
+    # None until a reading succeeds, so the display shows "--" instead of a fake 0
+    temperature = None
+    humidity = None
     sensorName = "Taras"
     client = ""
     device = ""
@@ -35,16 +36,18 @@ class Sensor:
     def DrawSensor(
         self, draw: ImageDraw.ImageDraw, fonts, x1: int, y1: int, x2: int, y2: int
     ):
+        temperature = "--" if self.temperature is None else str(self.temperature)
+        humidity = "--" if self.humidity is None else str(round(self.humidity))
         draw.text((x1 + 15, y1 + 5), "TARAS", 0, fonts["font18"])
         draw.text(
             (x1 + 15, y1 + 18),
-            str(self.temperature) + "°",
+            temperature + "°",
             font=fonts["font48bold"],
             fill=0,
         )
         draw.text(
             (x1 + 15, y1 + 65),
-            str(self.humidity) + "%",
+            humidity + "%",
             font=fonts["font30bold"],
             fill=0,
         )
@@ -58,9 +61,11 @@ class Sensor:
     async def Connect(self) -> bool:
         logger.info("Starting Sensor connection")
         try:
+            # drop a stale connection left over from a failed read
+            await self.Disconnect()
             devices = await BleakScanner.discover(timeout=10)
             for d in devices:
-                logger.info("Found device: " + str(d))
+                logger.debug("Found device: " + str(d))
                 
                 if d.name != None and d.name.startswith("ATC"):
                     self.device = d
@@ -77,12 +82,15 @@ class Sensor:
                     self.client = client
                     self.connected = True
                     await self.GetData()
-                    return True
+                    return self.connected
+            logger.warning("Sensor not found among " + str(len(devices)) + " devices")
         except Exception as e:
             logger.error(str(e))
-            self.client = ""
-            self.connected = False
-            return False
+        self.client = ""
+        self.connected = False
+        self.temperature = None
+        self.humidity = None
+        return False
 
     async def GetData(self):
         try:
@@ -99,12 +107,15 @@ class Sensor:
 
             logger.info("temp:" + str(self.temperature) + " hum: " + str(self.humidity))
         except Exception as e:
-            logger.error(str(e))
+            logger.error("Sensor read failed: " + str(e))
             self.connected = False
-            print(str(e))
 
     async def Disconnect(self):
         if not self.client:
             return
         logger.info("Disconnecting from " + str(self.device))
-        await self.client.disconnect()
+        try:
+            await self.client.disconnect()
+        finally:
+            self.client = ""
+            self.connected = False
